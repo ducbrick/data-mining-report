@@ -7,6 +7,8 @@ General infos
 List & explain more deeply some criteria/models of similarity measurement
 ## Why does it matter
 General infos
+It matters because many real world problem require finding similar items 😥
+Many higher-level algorithms like clustering or classification depend on accurate item similarity measurement.
 ## Specific/real-world applications
 Detailed infos
 
