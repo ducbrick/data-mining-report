@@ -34,13 +34,13 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
   Cho 2 vector $\mathbf{x} = [x_1, x_2, \ldots, x_n]$ và $\mathbf{y} = [y_1, y_2, \ldots, y_n]$ trong không gian $n$ chiều, khi đó khoảng cách giữa 2 vectors này được tính bằng công thức:
 
 
-  $$ d(\mathbf{x}, \mathbf{y}) = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2} $$
+  $$d(\mathbf{x}, \mathbf{y}) = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2}$$
   
   Khoảng cách Euclidean thông thường còn được gọi là L2-norm thường được dùng cho  dữ liệu dạng số liên tục hoặc các đối tượng có thể biểu diễn dưới dạng vector trong không gian $n$ chiều ví dụ như một số bài toán phân cụm,...
 
   Trong hợp tổng quát (Lr-norm), với hằng số $r$ bất kỳ, khoảng cách này được tính bằng công thức:
 
-  $$ d(\mathbf{x}, \mathbf{y}) = \left(\sum_{i=1}^{n} |x_i - y_i|^r\right)^{1/r} $$
+  $$d(\mathbf{x}, \mathbf{y}) = \left(\sum_{i=1}^{n} |x_i - y_i|^r\right)^{1/r}$$
 
   Khi $r = 2$ ta có khoảng các Euclidean thông thường
 
@@ -51,7 +51,7 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
 
   Công thức:
 
-  $$ d(x, y) = 1 - \text{SIM}(x, y) $$
+  $$d(x, y) = 1 - \text{SIM}(x, y)$$
 
   Khác với Jaccard Similar dùng để đo độ giống nhau của 2 tập hợp rời rạc, Jaccard Distance được dùng để đo độ khác nhau giữa chúng. Ưu điểm của phương pháp này là dễ dàng tính toán và mở rộng, phù hợp khi chúng ta không quan tâm đến tần suất xuất hiện của đối tượng trong các tập hợp mà chỉ quan tâm chúng có hoặc không có.
 
@@ -59,7 +59,7 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
 
   Công thức:
 
-  $$ \text{Cosine}(\mathbf{x}, \mathbf{y}) = \frac {\mathbf{x} \cdot \mathbf{y}}{||\mathbf{x}|| \cdot ||\mathbf{y}||} $$
+  $$\text{Cosine}(\mathbf{x}, \mathbf{y}) = \frac {\mathbf{x} \cdot \mathbf{y}}{||\mathbf{x}|| \cdot ||\mathbf{y}||}$$
 
 
   Đây là một phương pháp quen thuộc để tính góc giữa 2 vector trong không gian Euclid.
@@ -76,7 +76,7 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
 
   Công thức:
 
-  $$ d(x, y) = L(x) + L(y) - 2 \times L(LCS(x, y)) $$
+  $$d(x, y) = L(x) + L(y) - 2 \times L(LCS(x, y))$$
 
   Trong đó:
     
@@ -93,6 +93,6 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
 
   Công thức:
 
-  $$ d(\mathbf{x}, \mathbf{y}) = \sum_{i=0}^{n} |x_i - y_i| $$
+  $$d(\mathbf{x}, \mathbf{y}) = \sum_{i=0}^{n} |x_i - y_i|$$
 
   Hamming Distance thường được dùng khi dữ liệu là chuỗi nhị phân hoặc chuỗi ký tự có cùng độ dài. Được áp dụng trong các bài toán về tìm lỗi, tìm kiếm vector tương tự, so khớp mẫu,...
