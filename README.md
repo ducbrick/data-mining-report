@@ -34,11 +34,10 @@ Distance functions are, therefore, fundamental to the effective design of data m
 ### Reverse image search
 + Find photos/images similar to input one
 + Remove noises
-+ Represent image as *feature vector* (color, shapes, layout, objects, etc)
++ Measure similarity by color, shapes, layout, objects, etc
 
 ### Financial fraud detection
 + Determine if transactions, accounts, behaviors, patterns are similar to known fraudulent ones
-+ Representation: feature vector/node embedding
 
 ## What is "similarity", how are items considered similar
 [See](similarity-measures.md)
