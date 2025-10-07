@@ -2,9 +2,7 @@
 
 # Introduction
 ## What is "finding similar items"
-General infos
-## What is "similarity", how are items considered similar
-List & explain more deeply some criteria/models of similarity measurement
+[See](intro-what-is-finding-similar.md)
 ## Why does it matter
 Finding similar items and estimating similarity is a foundational level problem of data mining. Similarity underlies major mining tasks and applications, such as classification, clustering, recommendation or information retrieval. However, there is no universal formula for measuring similarities. Different data types require different interpretations of similarity.  
 Even with the same type of data, different goals may demand different similarity measures. For instance, in text mining, a search engine may use cosine similarity to retrieve documents that share relevant keywords, emphasizing topical overlap. In contrast, a plagiarism detection system may rely on edit distance to capture near-duplicate phrasing and structure rather than general topic similarity.  
@@ -41,6 +39,9 @@ Distance functions are, therefore, fundamental to the effective design of data m
 ### Financial fraud detection
 + Determine if transactions, accounts, behaviors, patterns are similar to known fraudulent ones
 + Representation: feature vector/node embedding
+
+## What is "similarity", how are items considered similar
+[See](similarity-measures.md)
 
 # Techniques
 ## 1. Độ tương đồng Jaccard của các Tập hợp (Jaccard Similarity of Sets)
