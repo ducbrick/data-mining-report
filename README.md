@@ -34,13 +34,13 @@
 ### Financial fraud detection
 + Determine if transactions, accounts, behaviors, patterns are similar to known fraudulent ones
 
-## Data representation
+# Data representation
 real-world data are almost never of primitive types (simple numeric, categorical, etc) => Need to represent data in a format so that similarity measurement & searching techniques can be applied
 
-## What is "similarity", how are items considered similar
+# What is "similarity", how are items considered similar
 [See](similarity-measures.md)
 
-# Techniques
+# Similarity seach techniques
 ## 1. Độ tương đồng Jaccard của các Tập hợp (Jaccard Similarity of Sets)
 * **Độ tương đồng Jaccard** giữa hai tập hợp $S$ và $T$ được định nghĩa là tỉ lệ giữa kích thước của phần giao và kích thước của phần hợp.
 
