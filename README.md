@@ -6,9 +6,9 @@ General infos
 ## What is "similarity", how are items considered similar
 List & explain more deeply some criteria/models of similarity measurement
 ## Why does it matter
-General infos
-It matters because many real world problem require finding similar items 😥  
-Many higher-level algorithms like clustering or classification depend on accurate item similarity measurement. wtf do I even write here :( 
+Finding similar items and estimating similarity is a foundational level problem of data mining. Similarity underlies major mining tasks and applications, such as classification, clustering, recommendation or information retrieval. However, there is no universal formula for measuring similarities. Different data types require different interpretations of similarity.  
+Even with the same type of data, different goals may demand different similarity measures. For instance, in text mining, a search engine may use cosine similarity to retrieve documents that share relevant keywords, emphasizing topical overlap. In contrast, a plagiarism detection system may rely on edit distance to capture near-duplicate phrasing and structure rather than general topic similarity.  
+Distance functions are, therefore, fundamental to the effective design of data mining algorithms. A poor choice of the distance function can sometimes be disastrously misleading, depending on the application domain.
 
 ## Specific/real-world applications
 
