@@ -37,6 +37,31 @@
 # Data representation
 real-world data are almost never of primitive types (simple numeric, categorical, etc) => Need to represent data in a format so that similarity measurement & searching techniques can be applied
 
+## Final representations/formats
+The representations/formats of the output data after running input data through transformations. Similarity search algorithms can then be applied on these output data.
+
+### Vector embeddings
++ Numeric vector/array, eg,. `(0.12, -0.37, 0.84, 0.09, ...)`
++ Most common
++ Obtained through a function `f(input) -> output in R^d`, where:
+    + `f`: embedding model
+    + `d`: embedding dimension of the output vectors
++ Applicable pairwise similarity mesures: *Euclidean*, *Manhattan*, or [*Lp-norm*](en.wikipedia.org/wiki/Lp_space) in general, also *Cosine* and *dot product*
++ More specific representations:
+    + Dense vector, low-dimensional
+    + Sparse vector, high-dimentional (for models like *TF-IDF* and *Bag of words*)
+    + Node-level and graph-level embedding (when input data is structured like a graph)
++ Real-world application: vector databases store data as vector embeddings for fast nearest neighbors lookup
+
+### Probability and statistic 
++ Model uncertainty/variation instead of representing features of an entry as a vector embedding
++ Specific representations:
+    + *LDA* (*Latent-Dirichlet Allocation*): 
+        + Describe each document as a probability distribution over topics (eg,. 60% sport, 30% technology, 10% health)
+        + Similarity is then measured using metrics like *Kullback–Leibler divergence* or *Jensen–Shannon distance*
+
+## Transforming different data types
+
 # What is "similarity", how are items considered similar
 [See](similarity-measures.md)
 
