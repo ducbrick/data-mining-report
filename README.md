@@ -81,26 +81,14 @@ The representations/formats of the output data after running input data through 
 
 # Similarity seach techniques
 
+## Brute force
 
-## 1. Locality-Sensitive Hashing - LSH for Documents
-**LSH** là một kỹ thuật chung để tìm các cặp mục có độ tương đồng cao mà không cần phải kiểm tra tất cả các cặp có thể.
-* **LSH cho Chữ ký Minhash:** Hình thức LSH được thiết kế cụ thể cho các tài liệu được biểu diễn bằng chữ ký Minhash.
-* Kỹ thuật này thường sử dụng kỹ thuật **dải băng (banding technique)** để tạo ra các **cặp ứng viên (candidate pairs)**.
+## KD (k-dimensional) tree
 
-## 2. Lý thuyết về hàm nhạy vị trí (Theory of Locality-Sensitive Functions)
+## Ball tree
 
-* Gồm các cách khuếch đại một họ hàm nhạy vị trí bằng cách sử dụng các phép xây dựng **AND** và **OR** để điều chỉnh xác suất tìm ra các cặp tương đồng.
+## Locality-sensitive hashing
 
-## 3. LSH cho các thước đo khoảng cách khác (LSH Families for Other Distance Measures)
-* LSH cho **Khoảng cách Hamming**.
-* **Siêu phẳng Ngẫu nhiên (Random Hyperplanes)** và LSH cho **Khoảng cách Cosine**.
-* LSH cho **Khoảng cách Euclidean**.
+## Hierarchical Navigable Small World Graph
 
-## 4. Các Phương pháp phát hiện mức độ tương đồng cao (Methods for High Degrees of Similarity)
-
-Khi yêu cầu về mức độ tương đồng rất cao (gần 1):
-
-* **Lọc dựa trên Độ dài (Length-Based Filtering):** So sánh các đối tượng có độ dài (số lượng phần tử) gần như nhau.
-* **Lập chỉ mục Tiền tố (Prefix Indexing):** Sử dụng các ký hiệu ở đầu (tiền tố) của chuỗi để xây dựng chỉ mục và giảm số lượng so sánh cần thiết.
-* Sử dụng thông tin **Vị trí** và **Độ dài Hậu tố (Suffix Length):** Cải tiến việc lập chỉ mục bằng cách xét cả vị trí của ký hiệu trong tiền tố và độ dài của phần còn lại của chuỗi.
-
+## Product quantization
