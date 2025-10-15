@@ -89,6 +89,10 @@ The representations/formats of the output data after running input data through 
 
 ## Locality-sensitive hashing
 
+## NN-Descent
+
+## Small-World Graph
+
 ## Hierarchical Navigable Small World Graph
 
 ## Product quantization
