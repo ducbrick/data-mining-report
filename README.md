@@ -156,6 +156,7 @@ Audio data is time-series data btw
 ## KD (k-dimensional) tree
 
 ## Ball tree
+[Ball-tree](ball-tree.md)
 
 ## Locality-sensitive hashing
 
