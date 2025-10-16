@@ -105,11 +105,51 @@ The representations/formats of the output data after running input data through 
     + *LCS*: Longest common subsequence
 
 ## Transforming different data types
+Different data types, for different similarity measurement, require different transformations
+### Numeric data
+Numeric data can be used directly for similarity measurements. However transformations are still needed:
+1. Normalization
+### Text data (N gram is bad just use embeddings)
+1. Bag of Words
+   + Each document is represented as a **vector** of size V, where V equals the size of the vocabulary (the number of unique words from all documents)
+   + Each dimension is the count (or weight, like TF-IDF) of the corresponding word
+2. K-shingles
+   + a k-shingles is a substring of length k that appears in a text.
+   + by breaking a document into unique k-shingles, you get a set that represent the document.
+		- example here
+   + Shingles can be hashed to reduce size. However, the space needed is still large. We want to replace sets with smaller representations called "signatures"
+3. Minhashing
+   + Characteristic matrix: each column is a set, the rows are the elements
+   +  To minhash a set from the matrix: pick a permutations of the rows. The minhash value of the set is the row number of the first row where the column has a 1
+   +  Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$. the vector $\[h_1(S), ..., h_n(S)]$  is the signature of the set S.
+   +  Unfortunately, just permutating a large characteristic matrix explicitly is already time-consuming
+       + How to compute minhash signatures then?
+4. Word embeddings / Document embeddings
+   + Represent words by small, dense vector. The idea is that similar words are near each other in high-dimensional space
+   + Technique: Word2Vec: Skip-gram, CBOW
+     - Explain Skip-gram here? (sir this is not a NLP class) 
+   + We want to represent whole documents, not just words. Doc2Vec is an extension of Word2Vec that create document vector embeddings
+5. LDA: Latent topic model
+   +
+
+### Time-series data
+Audio data is time-series data btw
+1. SAX
+2. Discrete Wavelet Transform
+   + We consider the use of wavelet transformations as a dimensionality reduction technique to permit efficient similarity search over high-dimensional time-series data
+   + [Too long will read later](https://infolab.usc.edu/csci599/Fall2003/Time%20Series/Similarity%20search%20over%20time-series%20data%20using%20wavelets.pdf)
+3. Discrete Fourier Transform
+### Image data
+1. CNN
+   + More embeddings :(
+### Graph data
+
+
 
 # What is "similarity", how are items considered similar
 [See](similarity-measures.md)
 
-# Similarity seach techniques
+# Similarity search techniques
 
 ## Brute force
 
