@@ -1,3 +1,33 @@
+<!--toc:start-->
+- [Introduction](#introduction)
+  - [What is "finding similar items"](#what-is-finding-similar-items)
+  - [Specific/real-world applications](#specificreal-world-applications)
+    - [Recommendation system](#recommendation-system)
+    - [Plagiarism/duplicate detection](#plagiarismduplicate-detection)
+    - [Reverse image search](#reverse-image-search)
+    - [Financial fraud detection](#financial-fraud-detection)
+- [Data representation](#data-representation)
+  - [Final representations/formats](#final-representationsformats)
+    - [Vector embeddings](#vector-embeddings)
+    - [Probability and statistic](#probability-and-statistic)
+    - [Hashing/signature](#hashingsignature)
+    - [Token sequence](#token-sequence)
+  - [Transforming different data types](#transforming-different-data-types)
+- [What is "similarity", how are items considered similar](#what-is-similarity-how-are-items-considered-similar)
+- [Similarity seach techniques](#similarity-seach-techniques)
+  - [Brute force](#brute-force)
+  - [KD (k-dimensional) tree](#kd-k-dimensional-tree)
+  - [Ball tree](#ball-tree)
+  - [Locality-sensitive hashing](#locality-sensitive-hashing)
+  - [NN-Descent](#nn-descent)
+    - [K-NNG](#k-nng)
+    - [Constructing a K-NNG with NN-Descent](#constructing-a-k-nng-with-nn-descent)
+    - [K-NN search on a K-NNG](#k-nn-search-on-a-k-nng)
+  - [Small-World Graph](#small-world-graph)
+  - [Hierarchical Navigable Small World Graph](#hierarchical-navigable-small-world-graph)
+  - [Product quantization](#product-quantization)
+<!--toc:end-->
+
 ***Finding similar items***
 
 # Introduction
