@@ -90,6 +90,97 @@ The representations/formats of the output data after running input data through 
 ## Locality-sensitive hashing
 
 ## NN-Descent
++ Introduced in [Efficient K-Nearest Neighbor Graph Construction for Generic Similarity Measures](nndescent.pdf)
++ An algorithm to efficiently construct a approximate *K-NNG (K-Nearest Neighbors Graph)*
+### K-NNG
++ A graph where every node `u` has edges to `k` other nodes that is closest to it
++ Many (approximate) similarity search algos can be performed on an already constructed K-NNG with better time complexity than brute-force
++ The problem then becomes an efficient construction algorithm
++ Brute force: `O(n^2 * d)` where
+    + `n` is the number of nodes
+    + The function to measure distance between 2 nodes `d(u, v)` has time complexity of `O(d)`
+```
+for every node u                                 <- O(n)
+    for every other node v                       <- O(n)
+        compute d(u, v)                          <- O(d)
+    find v-k which is the k-th nearest node to u <- O(n) average (quickselect)
+    find every node v closer to u than v-k       <- O(n)
+    add them to u's neighbor list                <- O(k)
+```
+### Constructing a K-NNG with NN-Descent
++ Sacrifice accuracy in favor of speed
++ Based on the assumption: A neighbor of a neighbor is likely also a direct neighbor
++ Assumption -> Heuristic, only approximate result, not exact
++ The basis:
+    + For every node `u`, randomly picks `k` other nodes as its nearest neighbors
+    + Run many iterations, in each, for every node `u`, computes distance between `u` and its neighbors' neighbors, improve its neighbor list accordingly
+    + Stop iterating once no further notable improvements can be made
+```
+for every node u
+    randomly or heuristically pick k other nodes
+
+loop
+    for every node u
+        for every v neighboring u
+            for every p neighboring v other than u
+                compute d(u, p)
+        find k closest nodes to u, update u's neighbor list
+
+    if number of updates is less than threshold
+        stop loop
+```
++ Time complexity: `O(m * n * k^2 * d)`
+    + `m` is the number of iterations
+    + Worst case: same as brute-force
+    + In practice: `m * k <<<< n` -> very efficient, authors claim `O(n^1.14 * d)` found on empirical dataset
++ Advantages:
+    + General: works with any arbitary distance function `d(u, v)`
+    + Scalable: typically has acceptable time complexity
+    + Space efficient: constructs the K-NNG once and improves it in-place, minimal extra data are maintained
+    + Accurate: High accuracy (compared to brute-force) for real dataset, authors claim `>90%` and out-perform *Recursive Lanczos Partitioning* and *LSH*
+    + Easy to implement
+### K-NN search on a K-NNG
++ Input: 
+    + `q`: the query node, the distance function `d()` should be able to be used on `q`
+    + `k`: the number of nodes to search for (***NOTE:*** this `k` is different from the parameter `k_graph` used to construct the K-NNG)
++ Core idea: approximately search for the result by searching for node(s) closest to `q` and picking their neighbors
+    + Search for `U`: the list of nodes closest to `q` (`|U|` may be tweaked to favor either accuracy or speed)
+    + For each node `u` in `U`, consider `u` and its neighbors as result candidates
+    + Select `k` best candidates previously picked
+    + Time complexity: `O(k + |U| * k_graph)`
++ Brute-force: `O(n)` where `n` is the number of nodes in the K-NNG
++ Heuristic/meta-heuristic algorithms can be applied, example:
+    + Randomly picks a number of starting nodes, mark them as *discovered*
+    + Pick a discovered unvisited node `u` and visit it
+    + For every `v` neighboring `u`, compute `d(q, v)` and mark it as discovered
+    + Repeat until maximum number of iterations has been reached, or the best discovered node hasn't been updated recently, or other conditions
+    + Pick `k` best discovered nodes as result
+    + Time complexity: `O(m * k_graph * d)` where
+        + `m`: the number of iteration
+        + `k_graph`: the number of neighbor each node has
+        + Worst case: `O(n * k_graph * d)`
+        + In practice: much more time efficient
+```
+randomly pick starting_nodes
+
+for every u in starting_nodes
+    compute d(q, u)
+    add u to min_heap and explored_nodes
+
+loop
+    u = min_heap.pop
+    update best_discovered_node
+
+    for every v neighboring u
+        compute d(q, v)
+        if v not in explored_nodes
+            add v to min_heap and explored_nodes 
+
+    if stopping conditions met
+        stop loop
+
+pick k best nodes from explored_nodes
+```
 
 ## Small-World Graph
 
