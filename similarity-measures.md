@@ -38,7 +38,7 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
   
   Khoảng cách Euclidean thông thường còn được gọi là L2-norm thường được dùng cho  dữ liệu dạng số liên tục hoặc các đối tượng có thể biểu diễn dưới dạng vector trong không gian $n$ chiều ví dụ như một số bài toán phân cụm,...
 
-  Trong hợp tổng quát (Lr-norm), với hằng số $r$ bất kỳ, khoảng cách này được tính bằng công thức:
+  Trong hợp tổng quát (Lr-norm), với hằng số $r$ bất kỳ, khoảng cách này được tính bằng công thức khoảng cách Minkowski (Minkowski Distance):
 
   $$d(\mathbf{x}, \mathbf{y}) = \left(\sum_{i=1}^{n} |x_i - y_i|^r\right)^{1/r}$$
 

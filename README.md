@@ -86,6 +86,7 @@ The representations/formats of the output data after running input data through 
 ## KD (k-dimensional) tree
 
 ## Ball tree
+[Ball-tree](ball-tree.md)
 
 ## Locality-sensitive hashing
 
