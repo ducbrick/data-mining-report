@@ -178,7 +178,7 @@ loop
     + For each node `u` in `U`, consider `u` and its neighbors as result candidates
     + Select `k` best candidates previously picked
     + Time complexity: `O(k + |U| * k_graph)`
-+ Brute-force: `O(n)` where `n` is the number of nodes in the K-NNG
++ Brute-force: `O(n * d)` where `n` is the number of nodes in the K-NNG
 + Heuristic/meta-heuristic algorithms can be applied, example:
     + Randomly picks a number of starting nodes, mark them as *discovered*
     + Pick a discovered unvisited node `u` and visit it
@@ -188,7 +188,7 @@ loop
     + Time complexity: `O(m * k_graph * d)` where
         + `m`: the number of iteration
         + `k_graph`: the number of neighbor each node has
-        + Worst case: `O(n * k_graph * d)`
+        + Worst case: `O(n * d)`
         + In practice: much more time efficient
 ```
 randomly pick starting_nodes
@@ -202,8 +202,8 @@ loop
     update best_discovered_node
 
     for every v neighboring u
-        compute d(q, v)
         if v not in explored_nodes
+            compute d(q, v)
             add v to min_heap and explored_nodes 
 
     if stopping conditions met
