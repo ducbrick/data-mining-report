@@ -154,6 +154,7 @@ Audio data is time-series data btw
 ## Brute force
 
 ## KD (k-dimensional) tree
+[See](https://hackmd.io/@lto5/BkIeellAel)
 
 ## Ball tree
 [Ball-tree](ball-tree.md)
