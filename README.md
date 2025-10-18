@@ -177,15 +177,15 @@ Một họ hàm băm nhạy cục bộ (Locality-sensitive families) cần phả
 #### Kĩ thuật phân dải (banding technique):
 1. Tổng quan: nếu ta đã thực hiện minhashing để có được ma trận chữ kí (signature matrix), một cách hiệu quả để thực hiện phép băm là sử dụng kĩ thuật phân dải (banding). Giả sử ma trận chữ kí có n hàng, ta chia n hàng này thành b dải, mỗi dải gồm r hàng. Với mỗi dải, ta sử dụng một hàm băm để băm các vector cột trong dải đó vào nhiều bucket khác nhau. Chúng ta có thể sử dụng một hàm băm cho tất cả các dải, nhưng ta sẽ dùng bộ bucket riêng cho mỗi dải, để những vector cột giống nhau ở các dải khác nhau không bị gom chung một bucket. Sau đó những cặp phần tử được băm vào cùng một bucket ở mỗi dải sẽ trở thành những cặp ứng viên để kiểm tra chính xác độ tương đồng.
 2. Phân tích:
-   - Giả sử một cặp phần tử có độ tương đồng Jaccard là s, người ta chứng minh được rằng xác suất minhash signatures của chúng trùng khớp nhau trong một hàng bất kì cũng là s. Ta sẽ tính toán xác suất những phần tử này trở thành cặp ứng viên:
+- Giả sử một cặp phần tử có độ tương đồng Jaccard là s, người ta chứng minh được rằng xác suất minhash signatures của chúng trùng khớp nhau trong một hàng bất kì cũng là s. Ta sẽ tính toán xác suất những phần tử này trở thành cặp ứng viên:
    + Xác suất signature của chúng trùng khớp trong mọi hàng của một dải: s<sup>r</sup>
    + Xác suất signature của chúng không trùng khớp trong ít nhất một hàng của một dải: 1 - s<sup>r</sup>
    + Xác suất signature của chúng không trùng khớp trong ít nhất một hàng của mỗi dải: (1 - s<sup>r</sup>)^<sup>b</sup>
    + Xác suất signature của chúng trùng khớp trong mọi hàng của ít nhất một dải và do đó trở thành cặp ứng viên: 1 - (1 - s<sup>r</sup>)^<sup>b</sup>  
-  - Khi ta vẽ đồ thị của công thức trên bất kể b, r thế nào và s chạy từ 0 đến 1, ta nhận được một đường cong hình chữ S rất đặc trưng với 3 phần:
-	+ Phần bên trái thấp, gấn 0.
-    + Phần giữa tăng vọt đột ngột.
-    + Phần bên phải cao, gần 1.
+- Khi ta vẽ đồ thị của công thức trên bất kể b, r thế nào và s chạy từ 0 đến 1, ta nhận được một đường cong hình chữ S rất đặc trưng với 3 phần:
+   + Phần bên trái thấp, gấn 0.
+   + Phần giữa tăng vọt đột ngột.
+   + Phần bên phải cao, gần 1.
 - Phần dốc ở giữa giúp ta lọc dữ liệu đúng như mong muốn. Điểm mà đường cong bắt đầu dốc lên xấp xỉ bằng (1/b)<sup>(1/r)</sup>. Bằng cách điều chỉnh b và r, ta có thể di chuyển ngưỡng này cho phù hợp với bài toán. 
 
 ## NN-Descent
