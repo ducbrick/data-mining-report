@@ -13,16 +13,30 @@
     - [Hashing/signature](#hashingsignature)
     - [Token sequence](#token-sequence)
   - [Transforming different data types](#transforming-different-data-types)
+    - [Numeric data](#numeric-data)
+    - [Text data (N gram is bad just use embeddings)](#text-data-n-gram-is-bad-just-use-embeddings)
+    - [Time-series data](#time-series-data)
+    - [Image data](#image-data)
+    - [Graph data](#graph-data)
 - [What is "similarity", how are items considered similar](#what-is-similarity-how-are-items-considered-similar)
-- [Similarity seach techniques](#similarity-seach-techniques)
+- [Similarity search techniques](#similarity-search-techniques)
   - [Brute force](#brute-force)
   - [KD (k-dimensional) tree](#kd-k-dimensional-tree)
   - [Ball tree](#ball-tree)
   - [Locality-sensitive hashing](#locality-sensitive-hashing)
-  - [NN-Descent](#nn-descent)
-    - [K-NNG](#k-nng)
-    - [Constructing a K-NNG with NN-Descent](#constructing-a-k-nng-with-nn-descent)
+    - [Tổng quan về Locality-sensitive families:](#tổng-quan-về-locality-sensitive-families)
+    - [Tổng quan về Locality-sensitive hashing:](#tổng-quan-về-locality-sensitive-hashing)
+    - [Locality-sensitive hashing cho minhash signatures:](#locality-sensitive-hashing-cho-minhash-signatures)
+      - [Kĩ thuật phân dải (banding technique):](#kĩ-thuật-phân-dải-banding-technique)
+  - [K-NNG](#k-nng)
+    - [NN-Descent](#nn-descent)
     - [K-NN search on a K-NNG](#k-nn-search-on-a-k-nng)
+    - [Insertion](#insertion)
+      - [Local insertion](#local-insertion)
+      - [Periodical rebuild](#periodical-rebuild)
+    - [Deletion](#deletion)
+      - [Local deletion](#local-deletion)
+    - [Summary](#summary)
   - [Small-World Graph](#small-world-graph)
   - [Hierarchical Navigable Small World Graph](#hierarchical-navigable-small-world-graph)
   - [Product quantization](#product-quantization)
@@ -309,7 +323,7 @@ pick k best nodes from explored_nodes
 + When removing node `u` from an existing K-NNG, update, adjust and optimize only its neighbors' neighbor list
 + Pros: Fast
 + Cons: Inaccuracy increases after every deletion
-#### Periodical rebuild
++ Possible solution: periodical rebuild
 ### Summary
 + Pros:
     + (Technically) Applicable for any distance function
