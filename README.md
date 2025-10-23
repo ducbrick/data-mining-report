@@ -188,10 +188,11 @@ Một họ hàm băm nhạy cục bộ (Locality-sensitive families) cần phả
    + Phần bên phải cao, gần 1.
 - Phần dốc ở giữa giúp ta lọc dữ liệu đúng như mong muốn. Điểm mà đường cong bắt đầu dốc lên xấp xỉ bằng (1/b)<sup>(1/r)</sup>. Bằng cách điều chỉnh b và r, ta có thể di chuyển ngưỡng này cho phù hợp với bài toán. 
 
-## NN-Descent
-+ Introduced in [Efficient K-Nearest Neighbor Graph Construction for Generic Similarity Measures](nndescent.pdf)
-+ An algorithm to efficiently construct a approximate *K-NNG (K-Nearest Neighbors Graph)*
-### K-NNG
+## K-NNG
++ Mentioned/introduced in:
+    + [Relative neighborhood graphs and their relatives](Relative_neighborhood_graphs_and_their_relatives.pdf)
+    + [The relative neighborhood graph of a finite planar set](RNG.pdf)
+    + [Fast Approximate Nearest-Neighbor Search with k-Nearest Neighbor Graph](Fast_Approximate_Nearest-Neighbor_Search_with_k-Ne.pdf)
 + A graph where every node `u` has edges to `k` other nodes that is closest to it
 + Many (approximate) similarity search algos can be performed on an already constructed K-NNG with better time complexity than brute-force
 + The problem then becomes an efficient construction algorithm
@@ -206,7 +207,9 @@ for every node u                                 <- O(n)
     find every node v closer to u than v-k       <- O(n)
     add them to u's neighbor list                <- O(k)
 ```
-### Constructing a K-NNG with NN-Descent
+### NN-Descent
++ Introduced in [Efficient K-Nearest Neighbor Graph Construction for Generic Similarity Measures](nndescent.pdf)
++ An algorithm to efficiently construct a approximate *K-NNG (K-Nearest Neighbors Graph)*
 + Sacrifice accuracy in favor of speed
 + Based on the assumption: A neighbor of a neighbor is likely also a direct neighbor
 + Assumption -> Heuristic, only approximate result, not exact
@@ -280,6 +283,42 @@ loop
 
 pick k best nodes from explored_nodes
 ```
+
+### Insertion
++ K-NNG doesn't naturally support efficient incremental updates and is instead better fitted for processing batch query
++ There are a few approaches to handle this problem
+#### Local insertion
++ Suppose a new node `u` needs to be inserted into an existing K-NNG
++ `u`'s neighbor list can be obtained by performing a KNN search for `u`, on the graph
++ After that, `u`'s neighbors' neighbor list may need to be updated
++ Pros:
+    + Fast, no need to rebuild the entire graph
+    + Decent enough for small scale or infrequent insertions
++ Cons:
+    + Inaccuracy accumulates over time
+    + Not as accurate as a full rebuild
+#### Periodical rebuild
++ Expand upon the previous solution
++ After a number of insertions, perform a full rebuild of the entire graph to reduce inaccuracy
++ Pros: Ensure temporary inaccuracy is capped to a limit, and immediately after being rebuilt, the graph is as accurate as the construction algorithm allows it to be
++ Cons: Rebuilding is computationally intensive
+### Deletion
++ Even more tricky than insertion
+#### Local deletion
++ Same idea as local insertion
++ When removing node `u` from an existing K-NNG, update, adjust and optimize only its neighbors' neighbor list
++ Pros: Fast
++ Cons: Inaccuracy increases after every deletion
+#### Periodical rebuild
+### Summary
++ Pros:
+    + (Technically) Applicable for any distance function
+    + Captures the local similarity structure of data
+    + Fast and fairly accurate query
++ Cons:
+    + Expensive to build
+    + Not as effective when having to deal with dynamic updates
+    + Construction algorithm and parameter `k` affects the quality of the graph and the balance between accuracy vs speed
 
 ## Small-World Graph
 
