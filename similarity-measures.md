@@ -1,4 +1,3 @@
-
 ## What is "similarity", how are items considered similar
 
 ### 1. Tương đồng là gì?
@@ -30,13 +29,12 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
   Một số phương pháp đo khoảng cách được kể đến:
 
   **1. Khoảng cách Euclid (Euclidean Distances)**
-  
+
   Cho 2 vector $\mathbf{x} = [x_1, x_2, \ldots, x_n]$ và $\mathbf{y} = [y_1, y_2, \ldots, y_n]$ trong không gian $n$ chiều, khi đó khoảng cách giữa 2 vectors này được tính bằng công thức:
 
-
   $$d(\mathbf{x}, \mathbf{y}) = \sqrt{\sum_{i=1}^{n} (x_i - y_i)^2}$$
-  
-  Khoảng cách Euclidean thông thường còn được gọi là L2-norm thường được dùng cho  dữ liệu dạng số liên tục hoặc các đối tượng có thể biểu diễn dưới dạng vector trong không gian $n$ chiều ví dụ như một số bài toán phân cụm,...
+
+  Khoảng cách Euclidean thông thường còn được gọi là L2-norm thường được dùng cho dữ liệu dạng số liên tục hoặc các đối tượng có thể biểu diễn dưới dạng vector trong không gian $n$ chiều ví dụ như một số bài toán phân cụm,...
 
   Trong hợp tổng quát (Lr-norm), với hằng số $r$ bất kỳ, khoảng cách này được tính bằng công thức khoảng cách Minkowski (Minkowski Distance):
 
@@ -44,8 +42,7 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
 
   Khi $r = 2$ ta có khoảng các Euclidean thông thường
 
-  Trường hợp $r = 1$ ta có công thức cho $L_1\text{-norm}$ hay *Manhattan distance*
-
+  Trường hợp $r = 1$ ta có công thức cho $L_1\text{-norm}$ hay _Manhattan distance_
 
   **2. Khoảng cách Jaccard (Jaccard Distance)**
 
@@ -61,11 +58,10 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
 
   $$\text{Cosine}(\mathbf{x}, \mathbf{y}) = \frac {\mathbf{x} \cdot \mathbf{y}}{||\mathbf{x}|| \cdot ||\mathbf{y}||}$$
 
-
   Đây là một phương pháp quen thuộc để tính góc giữa 2 vector trong không gian Euclid.
 
   Cosine Distance thường được áp dụng cho các tập dữ liệu thưa và có độ lớn khác nhau khi hướng của vector là yếu tố quyết định sự tương đồng, thay vì khoảng cách tuyệt đối hoặc độ lớn của các thành phần.
-  
+
   **4. Khoảng cách Edit (Edit Distance)**
 
   Khi dữ liệu là dạng chuỗi (string) ta sử dụng khoảng cách Edit để tính toán độ tương đồng.
@@ -79,13 +75,12 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
   $$d(x, y) = L(x) + L(y) - 2 \times L(LCS(x, y))$$
 
   Trong đó:
-    
-    + $L(x)$ là độ dài chuỗi $x$
-    + $L(y)$ là độ dài chuỗi $y$
-    + $L(LCS(x, y))$ là độ dài chuỗi con chung dài nhất giữa $x$ và $y$
+
+  - $L(x)$ là độ dài chuỗi $x$
+  - $L(y)$ là độ dài chuỗi $y$
+  - $L(LCS(x, y))$ là độ dài chuỗi con chung dài nhất giữa $x$ và $y$
 
   Edit Distance thường được áp dụng cho các bài toán kiểm tra chính tả, khớp tên, so sánh DNA, nhận dạng mẫu, fuzzy matching,...
-
 
   **5. Khoảng cách Hamming (Hamming Distance)**
 
@@ -96,3 +91,13 @@ Các tiêu chí đo lường độ tương đồng được chia thành 2 nhóm 
   $$d(\mathbf{x}, \mathbf{y}) = \sum_{i=0}^{n} |x_i - y_i|$$
 
   Hamming Distance thường được dùng khi dữ liệu là chuỗi nhị phân hoặc chuỗi ký tự có cùng độ dài. Được áp dụng trong các bài toán về tìm lỗi, tìm kiếm vector tương tự, so khớp mẫu,...
+
+### 4. So sánh các đo độ tương đồng và khoảng cách
+
+| Độ đo         | Loại dữ liệu                              | Khi nào dùng                                                                   |                Chi phí                 | Ưu điểm                                                                                                            | Nhược điểm                                                                                                                                               |
+| :------------ | :---------------------------------------- | :----------------------------------------------------------------------------- | :------------------------------------: | :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Euclidean** | Số liên tục, vector số                    | Khoảng cách hình học, giảm chiều dữ liệu, k-NN, phân cụm k-means               |  $O(d)$<br />$d$ là số chiều dữ liệu   | Trực quan, được dùng mặc định trong nhiều thuật toán                                                               | Nhạy với scale, outlier, không phù hợp với dữ liệu rời rạc, nhị phân, tốn kém khi $d$ lớn                                                                |
+| **Cosine**    | Vector số, tốt với dữ liệu thưa           | So sánh hướng (text, TF-IDF), recommendation system                            |                 $O(d)$                 | Không phụ thuộc độ lớn của vector dữ liệu                                                                          | Vi phạm tiên đề đồng nhất (2 vector khác nhau nhưng cùng hướng có khoảng cách bằng 0), kết quả tính toán có thể bị chi phối bởi các chiều có giá trị lớn |
+| **Hamming**   | Binary, categorical (dữ liệu cùng độ dài) | Vector nhị phân, mã bit, so sánh các vector đặc trưng phân loại, phát hiện lỗi |                 $O(d)$                 | Đơn giản, dễ tính toán                                                                                             | Không dùng cho dữ liệu liên tục, nhạy cảm nếu chuỗi dài                                                                                                  |
+| **Jaccard**   | Sets, vector nhị phân                     | So sánh phần giao hai tập (văn bản, hồ sơ,…)                                   |                 $O(d)$                 | Xử lý hiệu quả các tập hợp có kích thước khác nhau                                                                 | Khuyết thông tin về tần suất của phần tử, không phù hợp với dữ liệu liên tục hoặc quan trọng về thứ tự phần tử                                           |
+| **Edit**      | Chuỗi rời rạc (sequences, string)         | So khớp chuỗi, NLP, tìm kiếm gần đúng                                          | $O(m×n)$<br />$m, n$ là độ dài 2 chuỗi | Đo lường được sự tương đồng của dữ liệu có tính chất tuần tự, nhạy cảm với sai lệch nhỏ, tốt với chuỗi khác độ dài | Chi phí tính toán cao, chỉ sử dụng được cho dữ liệu dạng chuỗi                                                                                           |

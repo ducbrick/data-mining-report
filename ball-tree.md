@@ -137,7 +137,9 @@ function BALLTREE_KNN(root, q, k):
 
 Độ phức tạp:
 
-- Trung bình: $\mathcal{O}(d \log N)$
+- Trung bình: $\mathcal{O}(d \log N)$:
+  - $d$ để tính khoảng cách từ truy vấn đến các node con trong cây: $dist(q, p) = \sqrt{\sum_{i=1}^d (q_i - p_i)^2}$
+  - $\log N$ số tầng trung bình của cây
 - Xấu nhất: $\mathcal{O}(dN)$
 
 #### 3. Ball\*-Tree
@@ -304,41 +306,7 @@ function DELETE(root, x):
 
 **Áp dụng trong bài toán $k$-NN**
 
-```py
-function KNN_SEARCH(root, q, k):
-    # max-heap H of size <= k (key = distance, largest at top)
-    H = empty max-heap
-    # recursive search
-    function SEARCH(node):
-        if node.is_leaf:
-            for x in node.points:
-                d = dist(q, x)                      													# O(d)
-                if H.size < k: H.push((d,x))
-                else if d < H.top().d:
-                    H.pop(); H.push((d,x))
-            return
-        # compute lower bounds to children
-        d_left_min  = max(0, dist(q, node.left.center)  - node.left.radius)  	# O(d)
-        d_right_min = max(0, dist(q, node.right.center) - node.right.radius) 	# O(d)
-        # visit nearer child first
-        if d_left_min < d_right_min:
-            if H.size < k or d_left_min <= H.top().d:
-                SEARCH(node.left)
-            if H.size < k or d_right_min <= H.top().d:
-                SEARCH(node.right)
-        else:
-            if H.size < k or d_right_min <= H.top().d:
-                SEARCH(node.right)
-            if H.size < k or d_left_min <= H.top().d:
-                SEARCH(node.left)
-    SEARCH(root)
-    return items of H sorted ascending
-```
-
-Độ phức tạp:
-
-- Trung bình: $\mathcal{O} (d \log N)$
-- Xấu nhất: $\mathcal{O} (d N)$
+Tương tự như Ball-Tree truyền thống.
 
 > [!TODO]
 >
