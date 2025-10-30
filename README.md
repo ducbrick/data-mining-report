@@ -208,6 +208,8 @@ Một họ hàm băm nhạy cục bộ (Locality-sensitive families) cần phả
     + [The relative neighborhood graph of a finite planar set](RNG.pdf)
     + [Fast Approximate Nearest-Neighbor Search with k-Nearest Neighbor Graph](Fast_Approximate_Nearest-Neighbor_Search_with_k-Ne.pdf)
 + A graph where every node `u` has edges to `k` other nodes that is closest to it
++ Example K-NNG with `10` nodes and Euclidian distance:
+![](assets/graph.png)
 + Many (approximate) similarity search algos can be performed on an already constructed K-NNG with better time complexity than brute-force
 + The problem then becomes an efficient construction algorithm
 + Brute force: `O(n^2 * d)` where
@@ -318,7 +320,7 @@ pick k best nodes from explored_nodes
 + Cons: Rebuilding is computationally intensive
 ### Deletion
 + Even more tricky than insertion
-#### Local deletion
++ Local deletion
 + Same idea as local insertion
 + When removing node `u` from an existing K-NNG, update, adjust and optimize only its neighbors' neighbor list
 + Pros: Fast
@@ -326,13 +328,20 @@ pick k best nodes from explored_nodes
 + Possible solution: periodical rebuild
 ### Summary
 + Pros:
+    + Simple and intuitive
     + (Technically) Applicable for any distance function
     + Captures the local similarity structure of data
     + Fast and fairly accurate query
 + Cons:
-    + Expensive to build
+    + Expensive to build -> poor scalability
     + Not as effective when having to deal with dynamic updates
     + Construction algorithm and parameter `k` affects the quality of the graph and the balance between accuracy vs speed
+    + Depending on the dataset, the result graph can get disjointed
+    + Because of the reason above, query may not be super optimal
++ Best fit for:
+    + Static dataset: No updates, graph doesn't degrade, no need to rebuild
+    + Moderately-sized dataset: Suboptomal performance is acceptable -> exchange it for simplicity
+    + Dense dataset: The graph is less disjointed and more connected, construction and query is faster and more accurate
 
 ## Small-World Graph
 
