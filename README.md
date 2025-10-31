@@ -128,16 +128,31 @@ Numeric data can be used directly for similarity measurements. However transform
    + Each document is represented as a **vector** of size V, where V equals the size of the vocabulary (the number of unique words from all documents)
    + Each dimension is the count (or weight, like TF-IDF) of the corresponding word
 2. K-shingles
-   + a k-shingles is a substring of length k that appears in a text.
-   + by breaking a document into unique k-shingles, you get a set that represent the document.
-		- example here
-   + Shingles can be hashed to reduce size. However, the space needed is still large. We want to replace sets with smaller representations called "signatures"
-3. Minhashing
-   + Characteristic matrix: each column is a set, the rows are the elements
-   +  To minhash a set from the matrix: pick a permutations of the rows. The minhash value of the set is the row number of the first row where the column has a 1
-   +  Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$. the vector $\[h_1(S), ..., h_n(S)]$  is the signature of the set S.
+   + a k-shingles is a substring of length k that appears in a text (document).
+   + by breaking a document into unique k-shingles, you get a **set** that **represent the document**.
+	    + for example, the set of 2-shingles for the text abcdab is {ab, bc, cd, da}
+   + Shingles can be hashed to reduce size. However, the space needed is still large. We want to replace sets with smaller representations
+   + This representation is called "signature" and is created from the *minhashing* process
+#### 3. Minhashing  
+##### 3.1. Characteristic matrix:
+  + A characteristic matrix is a representation of a collection of sets
+      + each column corresponds to a set
+      + each row corresponds to an element in the "universal set", which is the set of all elements from all sets
+      + the value of position (r, c) is 1 if the element in row r is a member of the set in column c; else the value is 0 
+      ![](assets/chara_matrix.png)
+        + for this example: set $S_1$ has elements a and d; set $S_2$ has element c only;... . {a, b, c, d, e} is the universal set    
+##### 3.2. Minhashing a set
+  + To minhash a set from the matrix, first we pick a permutation of the rows. 
+  + The minhash value of the set is the element of the first row where the column has a 1
+  ![](assets/chara_matrix_permutation.png)
+    + The *minhash* of the set $S_1$ **for this permutation** would be $h(S_1) = a$
+##### 3.3 Finally, Signature
+  + Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$
+    + The *minhash signature* of set S is the vector [$h_1(S), h_2(S),..., h_n(S)$]
+    + We can form a *signature matrix* with each column being the *minhash signature* of a set
    +  Unfortunately, just permutating a large characteristic matrix explicitly is already time-consuming
        + How to compute minhash signatures then?
+##### 3.4 Actually computing minhash signatures
 4. Word embeddings / Document embeddings
    + Represent words by small, dense vector. The idea is that similar words are near each other in high-dimensional space
    + Technique: Word2Vec: Skip-gram, CBOW
