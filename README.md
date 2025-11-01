@@ -145,14 +145,40 @@ Numeric data can be used directly for similarity measurements. However transform
   + To minhash a set from the matrix, first we pick a permutation of the rows. 
   + The minhash value of the set is the element of the first row where the column has a 1
   ![](assets/chara_matrix_permutation.png)
-    + The *minhash* of the set $S_1$ **for this permutation** would be $h(S_1) = a$
-##### 3.3 Finally, Signature
+    + The *minhash* of the set $S_1$ **for this row permutation** (b, e, a, d, c) would be $h(S_1) = a$
+##### 3.3 Minhashing and Jaccard similarity
+  + The probability that the minhash (for a permutation of rows) produces the same values for two sets is equal to the Jaccard similarity of those sets
+    + The chance of minhash picking the same row for both set (in the characteristic matrix) is equal to their Jaccard probability
+  + Proof:
+    + Consider the columns for two sets $S_1$ and $S_2$. The rows can be divided into 3 types:
+      + Type X rows have 1 in both columns
+      + Type Y rows have 1 in only one column
+      + Type Z rows have 0 in both columns
+    + Let there be $x$ rows of type X and $y$ rows of type Y. 
+      + The Jaccard similarity of the two sets would be: $SIM(S_1, S_2) = x/(x + y)$
+      + Now we want to know chance of Minhash picking the same row for both set, or the chance of $h(S_1) = h(S_2)$
+        + Consider a random permutation of the rows, we proceed from the top to find $h(S_1)$ and $h(S_2)$
+        + The chance of $h(S_1) = h(S_2)$ is the chance that the first row that is *not* a Z row, is a X row
+        + And that chance is $x/(x +y)$
+    + Illustration:
+##### 3.4 Finally, Signature
   + Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$
     + The *minhash signature* of set S is the vector [$h_1(S), h_2(S),..., h_n(S)$]
     + We can form a *signature matrix* with each column being the *minhash signature* of a set
    +  Unfortunately, just permutating a large characteristic matrix explicitly is already time-consuming
-       + How to compute minhash signatures then?
-##### 3.4 Actually computing minhash signatures
+       + We need another way to compute the  *signature matrix*
+##### 3.5 Actually computing minhash signatures
+  + We can *simulate* the effect of a random permutation by a random hash function that maps row numbers to as many buckets as there are rows ($k$ buckets for $k$ rows)
+    + Of course, there may be unfilled buckets (or buckets with more than 1 row), but that is insignificant, as long as $k$ is large enough and there are not too many collisions
+  + The process:
+    + We pick $n$ randomly chosen hash functions $h_1, h_2, ..., h_n$ on the rows (in place of $n$ permutations)
+    + Let $SIG(i, c)$ be the element of the *signature matrix* for the *i*th hash function and column c (as in, the element at position (i, c) of the *signature matrix*). Initilize all $SIG(i, c)$ to $\infty$
+    + For each row $r$
+      + Compute $h_1(r), h_2(r),..., h_n(r)$
+      + For each column $c$:
+        + If $c$ has 1 in row $r$: 
+  + Example:
+
 4. Word embeddings / Document embeddings
    + Represent words by small, dense vector. The idea is that similar words are near each other in high-dimensional space
    + Technique: Word2Vec: Skip-gram, CBOW
