@@ -250,7 +250,7 @@ Một họ hàm băm nhạy cục bộ (Locality-sensitive families) cần phả
     + [Fast Approximate Nearest-Neighbor Search with k-Nearest Neighbor Graph](Fast_Approximate_Nearest-Neighbor_Search_with_k-Ne.pdf)
 + A graph where every node `u` has edges to `k` other nodes that is closest to it
 + Example K-NNG with `10` nodes and Euclidian distance:
-![](assets/graph.png)
+![](assets/knng.png)
 + Many (approximate) similarity search algos can be performed on an already constructed K-NNG with better time complexity than brute-force
 + The problem then becomes an efficient construction algorithm
 + Brute force: `O(n^2 * d)` where
@@ -292,6 +292,14 @@ loop
     + `m` is the number of iterations
     + Worst case: same as brute-force
     + In practice: `m * k <<<< n` -> very efficient, authors claim `O(n^1.14 * d)` found on empirical dataset
+![1](assets/nndescent1.png)
+![2](assets/nndescent2.png)
+![3](assets/nndescent3.png)
+![4](assets/nndescent4.png)
+![5](assets/nndescent5.png)
+![6](assets/nndescent6.png)
+![7](assets/nndescent7.png)
+![8](assets/nndescent8.png)
 + Advantages:
     + General: works with any arbitary distance function `d(u, v)`
     + Scalable: typically has acceptable time complexity
@@ -314,11 +322,11 @@ loop
     + For every `v` neighboring `u`, compute `d(q, v)` and mark it as discovered
     + Repeat until maximum number of iterations has been reached, or the best discovered node hasn't been updated recently, or other conditions
     + Pick `k` best discovered nodes as result
-    + Time complexity: `O(m * k_graph * d)` where
+    + Time complexity: `O(m * (log(m) + k_graph * (d + log(m))))` where
         + `m`: the number of iteration
+        + `log(m)`: cost of inserting an item to a heap
         + `k_graph`: the number of neighbor each node has
-        + Worst case: `O(n * d)`
-        + In practice: much more time efficient
+        + In practice: much more time efficient than brute-force
 ```
 randomly pick starting_nodes
 
@@ -340,6 +348,10 @@ loop
 
 pick k best nodes from explored_nodes
 ```
+![1](assets/knns1.png)
+![2](assets/knns2.png)
+![3](assets/knns3.png)
+![4](assets/knns4.png)
 
 ### Insertion
 + K-NNG doesn't naturally support efficient incremental updates and is instead better fitted for processing batch query
