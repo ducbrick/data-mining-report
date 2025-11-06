@@ -14,11 +14,12 @@ Mỗi node $N$ trong Ball-Tree đại diện cho một siêu cầu $n$ chiều c
 
 ### Cách dựng cây
 
-#### 1. Nguyên tắc chung
+**Nguyên tắc chung**
 
 Có nhiều thuật toán để dựng Ball-Tree nhưng một phương pháp phổ biến nhất đó là đệ quy top-down (phân cực): bắt đầu từ `root` chứa toàn bộ dữ liệu, ở mỗi node, nếu số điểm > `leaf_size` thì tách node thành hai node con bằng một phép phân vùng và tiếp tục đệ quy.
 
-#### 2. Ball-Tree truyền thống (Moore's ball-tree)
+**Thuật toán Ball-Tree**
+Các bước chính để phân vùng tập điểm $P_N$ tại node $N$:
 
 1. Tính trọng tâm $\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i$ hoặc có thể chọn ngẫu nhiên.
 2. Chọn điểm cực 1 là điểm xa nhất so với trọng tâm:
@@ -28,7 +29,7 @@ Có nhiều thuật toán để dựng Ball-Tree nhưng một phương pháp ph�
 4. Gán mỗi điểm $x$ sang con trái nếu $||x - p^L|| \leq ||x - p^R||$, ngược lại gán sang phải.
 5. Với mỗi node con, tính lại $center$ và $radius = \max||x-center||$.
 
-**Pseudocode Ball-tree (Moore’s heuristic)**
+**Pseudocode**
 
 ```python
 function CONSTRUCT_BALLTREE(D, max_leaf_size):
@@ -100,7 +101,21 @@ function DELETE(node, x):
 - Trung bình: $\mathcal{O}(d \log N)$
 - Xấu nhất: $\mathcal{O}(dN)$
 
-**Áp dụng cho bài toán $k$-NN**
+### Áp dụng Ball-tree cho bài toán $k$-NN
+
+Ý tưởng: Để tìm $k$ lân cận gần nhất của một điểm truy vấn $q$ trong Ball-Tree, ta sử dụng phương pháp đệ quy với cắt tỉa (pruning) dựa trên khoảng cách từ $q$ đến các siêu cầu của các node con.
+
+Khi có một điểm truy vấn `q`, ta có thể tính khoảng cách tối thiểu từ `q` đến bất kỳ điểm nào trong node đó bằng công thức:
+
+$ D\_{min}(node) = \max(0, |q - center| - radius) $
+
+Điều này có nghĩa là:
+
+- Tất cả các điểm trong node đều cách `q` ít nhất là $D_{min}(node)$.
+- Nếu $D_{min}(node)$ lớn hơn khoảng cách tới điểm xa nhất trong tập k-neighbor hiện tại ($D_{worst} = heap.max\_key$), thì không có điểm nào trong node đó có thể là ứng viên tốt hơn, và ta cắt tỉa node đó đi. 
+- Ngược lại, nếu $D_{min}(node) \leq D_{worst}$, thì vẫn có khả năng tồn tại điểm tốt hơn trong node đó, và ta tiếp tục duyệt.
+
+Việc so sánh khoảng cách nhỏ nhất từ `q` đến các node con nhằm ưu tiên duyệt node con gần hơn trước, giúp tìm được các neighbor tốt sớm hơn và cải thiện hiệu quả cắt tỉa.
 
 ```py
 function BALLTREE_KNN(root, q, k):
@@ -142,180 +157,28 @@ function BALLTREE_KNN(root, q, k):
   - $\log N$ số tầng trung bình của cây
 - Xấu nhất: $\mathcal{O}(dN)$
 
-#### 3. Ball\*-Tree
+### Kết luận
 
-**Ball\*-Tree** là phiên bản cải tiến của Ball-Tree truyền thống, được phát triển để khắc phục việc xây dựng cây không cân bằng của Ball-Tree. Bằng cách xem xét sự phân bố toàn cục của dữ liệu để tìm ra siêu mặt phẳng phân tách phù hợp, hiệu quả hơn, Ball\*-Tree tạo ra các vùng con cân bằng hơn từ đó tối ưu cấu trúc cây và cải thiện tốc độ truy vấn.
+#### Ưu điểm
 
-1. Áp dụng PCA tính vector riêng tốt lớn nhất (vector đầu tiên):
+- Hiệu quả trong không gian nhiều chiều.
+- Có thể sử dụng các phép đo khoảng cách khác nhau $\rightarrow$ phù hợp với nhiều loại dữ liệu.
 
-$$\mathbf{w}_{(1)}=\arg\underset{\mathbf{w}}{\max} \frac{\mathbf{w}^T\mathbf{X}^T\mathbf{X}\mathbf{w}}{\mathbf{w}^T\mathbf{w}}$$
+#### Nhược điểm
 
-2. Chiếu tập dữ liệu $\mathbf{X}$ lên trụ của $\mathbf{w}_{(1)}$ được tập các giá trị sau khi chiếu:
+- Cấu trúc phức tạp.
+- Hiệu suất giảm khi chiều dữ liệu tăng.
+- Cần phải xây dựng lại cây khi thêm/xóa node.
+- Cần phải xác định kích thước lá tối đa trước khi xây dựng cây.
 
-$$T=\mathbf{w}_{(1)}.\mathbf{X}= \{t_1, t_2,\dots,t_n\}$$
+#### Nhận xét
 
-3. Xác định siêu mặt phẳng cắt vuống góc với trục của $\mathbf{w}_{(1)}$ tại điểm $t_c$:
-
-$$t_c = \arg \min \frac{|N_2 - N_1|}{N}+\alpha(\frac{t_c - t_{min}}{t_{max} - t_{min}})$$
-
-Trong đó:
-
-- $t_{min} = \underset{i}\min t_i$, $t_{max} = \underset{i}\max t_i$
-- $N_1 + N_2 = N$
-
-- Tham số $\alpha \gt 0$ giúp điều chỉnh mức độ ưu tiên giữa cân bằng số lượng và kích thước bán kính
-
-4. Phân vùng dữ liệu $\mathbf{X}$ thành hai tập $\mathbf{X}^R$ và $\mathbf{X}^L$ dựa theo $t_c$:
-
-$\mathbf{X}^R = \{{\mathbf{x}_i}|\mathbf{x}_i \in \mathbf{X}, t_i \lt t_c\}$
-
-$\mathbf{X}^L = \{{\mathbf{x}_i}|\mathbf{x}_i \in \mathbf{X}, t_i \ge t_c\}$
-
-5. Tính $center$ và $radius$ sau khi phân chia.
-
-**Pseudocode Ball\*-Tree**
-
-```py
-function BUILD_BALLSTAR(X, max_leaf_size, alpha, S):
-    N = |X|
-    center = CENTROID(X)
-    radius = max_{x in X} ||x - center||
-    node = new Node(center=center, radius=radius)
-    if N <= max_leaf_size:
-        node.points = X
-        node.is_leaf = True
-        return node
-
-    # 1) Apply PCA: compute first principal component w1
-    w1 = FIRST_EIGENVECTOR(X)   # argmax_w (w^T X^T X w) / (w^T w)
-
-    # 2) Project points onto w1 (1D coordinates)
-    T = [ t_i = x_i . w1  for x_i in X ]
-    t_min = min(T);  t_max = max(T)
-
-    # 3) Search for best split threshold t_c in [t_min, t_max]
-    best_tc = None; best_score = +inf
-    # Partition the interval [t_min, t_max] into S equal segments; test midpoints
-    for s in 1..S:
-        tc_s = t_min + (s - 0.5) * (t_max - t_min)/S   # midpoint of segment s
-        # Determine partitions by tc_s:
-        X_left  = { x_i | t_i < tc_s }
-        X_right = { x_i | t_i >= tc_s }
-        N1 = |X_left|;  N2 = |X_right|
-
-        score = (abs(N2 - N1) / N) + alpha * ( (tc_s - t_min) / (t_max - t_min) )
-        if score < best_score:
-            best_score = score
-            best_tc = tc_s
-            best_left = X_left; best_right = X_right
-
-    node.left  = BUILD_BALLSTAR(best_left,  max_leaf_size, alpha, S)
-    node.right = BUILD_BALLSTAR(best_right, max_leaf_size, alpha, S)
-    return node
-```
-
-Độ phức tạp:
-
-- Trung bình: $\mathcal{O}(S.Nd \log N)$
-  - $N \log N$ cho tổng số điểm qua các tầng
-  - $d$ để tính PCA bậc 1
-  - $S$ số điểm cắt được thử trong $[t_{min}, t_{max}]$
-- Xấu nhất: $\mathcal{O}(S.N^2d)$ khi cây lệch do dữ liệu phân bố kém hoặc PCA không tách được
-
-**Thêm node**
-
-```py
-function INSERT(root, x):
-    # descend greedily by projection
-    node = root
-    path = empty stack
-    while not node.is_leaf:
-        push(path, node)
-        proj = dot(node.w1, x)          					# O(d)
-        if proj < node.tc:
-            node = node.left
-        else:
-            node = node.right
-    # node is leaf
-    push(path, node)
-    append node.points, x              						# O(1) amortized
-    node.n += 1
-    # update center and radius incrementally if stored sums:
-    update_centroid_radius_incremental(node, x)  	# O(d)
-    # bubble updates up the path (update center/radius)
-    while path not empty:
-        p = pop(path)
-        recompute_center_radius_from_children(p)  # O(d) if incremental sums stored
-    # if overflow leaf, rebuild that leaf (split)
-    if |node.points| > max_leaf_size:
-        new_subtree = BUILD_BALLSTAR(node.points, max_leaf_size, α, S)
-        replace node in parent by new_subtree
-```
-
-Độ phức tạp:
-
-- Trung bình: $\mathcal{O}(d \log N)$
-- Xấu nhất: $\mathcal{O}(d N)$ do cây lệnh hoặc phải rebuild nhiều
-
-**Xóa node**
-
-```py
-function DELETE(root, x):
-    # Find and remove x - descent using projection (may miss if PCA changed; assume exact search found)
-    node = root
-    path = empty stack
-    while not node.is_leaf:
-        push(path, node)
-        proj = dot(node.w1, x)           						# O(d)
-        if proj < node.tc:
-            node = node.left
-        else:
-            node = node.right
-    # node is leaf: try remove
-    if x not in node.points:
-        # fallback: must search whole tree (expensive) or return False
-        return False
-    remove x from node.points          							# O(m) to find-and-remove where m = |node.points|
-    node.n -= 1
-    update_centroid_radius_after_removal(node)  		# O(d) if incremental maintained
-    # bubble updates upward
-    while path not empty:
-        p = pop(path)
-        recompute_center_radius_from_children(p)  	# O(d)
-    # optional: if leaf too small, merge/rebuild parent
-    if node.n < min_leaf_size:
-        parent = parent(node)
-        sibling = sibling_of(node)
-        merged = sibling.points ∪ node.points
-        if |merged| ≤ max_leaf_size:
-            parent.is_leaf = True
-            parent.points = merged
-            delete parent.left/right children
-            recompute_center_radius(parent)
-        else:
-            # rebuild parent subtree from merged
-            parent_subtree = BUILD_BALLSTAR(merged, max_leaf_size, α, S)
-            replace parent by parent_subtree
-    return True
-```
-
-Độ phức tạp:
-
-- Trung bình: $\mathcal{O} (d \log N)$
-- Xấu nhất: $\mathcal{O} (d N)$
-
-**Áp dụng trong bài toán $k$-NN**
-
-Tương tự như Ball-Tree truyền thống.
-
-> [!TODO]
->
-> Compare 2 these approachs
+- Ball-tree là một cấu trúc dữ liệu mạnh mẽ cho các bài toán tìm kiếm gần đúng trong không gian nhiều chiều.
+- Việc xây dựng và duy trì cây có thể tốn kém, nhưng giúp tăng tốc đáng kể quá trình truy vấn.
+- Cần phải thử nghiệm và điều chỉnh các tham số để đạt được hiệu suất tốt nhất cho từng bài toán cụ thể.
 
 ---
 
 ### Tài liệu tham khảo
 
 [1] [New Algorithms for Efficient High-Dimensional Nonparametric Classification](https://www.jmlr.org/papers/volume7/liu06a/liu06a.pdf)
-
-[2] [Ball\*-tree: Efficient spatial indexing for constrained nearest-neighbor earch in metric spaces](https://arxiv.org/pdf/1511.00628)
