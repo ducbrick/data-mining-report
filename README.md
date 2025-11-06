@@ -119,15 +119,13 @@ The representations/formats of the output data after running input data through 
     + *LCS*: Longest common subsequence
 
 ## Transforming different data types
-Different data types, for different similarity measurement, require different transformations
-### Numeric data
-Numeric data can be used directly for similarity measurements. However transformations are still needed:
-1. Normalization
-### Text data (N gram is bad just use embeddings)
-1. Bag of Words
+everything is a vector, vector is everything. it's really how we turn things into vectors for different data types and tasks
+This section will BRIEFLY introduce transformation methods for different data types, with somewhat an emphasis on minhash signatures (because it's described in the book!)
+### Text data
+#### 1. Bag of Words
    + Each document is represented as a **vector** of size V, where V equals the size of the vocabulary (the number of unique words from all documents)
    + Each dimension is the count (or weight, like TF-IDF) of the corresponding word
-2. K-shingles
+#### 2. K-shingles
    + a k-shingles is a substring of length k that appears in a text (document).
    + by breaking a document into unique k-shingles, you get a **set** that **represent the document**.
 	    + for example, the set of 2-shingles for the text abcdab is {ab, bc, cd, da}
@@ -158,15 +156,21 @@ Numeric data can be used directly for similarity measurements. However transform
       + The Jaccard similarity of the two sets would be: $SIM(S_1, S_2) = x/(x + y)$
       + Now we want to know chance of Minhash picking the same row for both set, or the chance of $h(S_1) = h(S_2)$
         + Consider a random permutation of the rows, we proceed from the top to find $h(S_1)$ and $h(S_2)$
-        + The chance of $h(S_1) = h(S_2)$ is the chance that the first row that is *not* a Z row, is a X row
+        + The chance of $h(S_1) = h(S_2)$ is the chance that the first row which is *not* a Z row, is an X row
         + And that chance is $x/(x +y)$
-    + Illustration:
+    + Illustration: 
+    ![](assets/chara_matrix_permutation.png)
+      + Consider the two set $S_1$ and $S_4$.
+        + We can drop every Z row, which leaves us with 3 rows ($a, d$ and $c$), two X row and one Y row
+        + Imagine a random permutation of the rows. The chance that the first row of the new table is an X row would be $2/3$
+        + This is the chance of $h(S_1)$ being equal to $h(S_2)$, and it is exactly the same as the Jaccard similarity of the two sets
+  + Unfortunately, just permutating a large characteristic matrix explicitly is already time-consuming
+    + We need another way to compute the  *signature matrix*
 ##### 3.4 Finally, Signature
   + Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$
     + The *minhash signature* of set S is the vector [$h_1(S), h_2(S),..., h_n(S)$]
     + We can form a *signature matrix* with each column being the *minhash signature* of a set
-   +  Unfortunately, just permutating a large characteristic matrix explicitly is already time-consuming
-       + We need another way to compute the  *signature matrix*
+
 ##### 3.5 Actually computing minhash signatures
   + We can *simulate* the effect of a random permutation by a random hash function that maps row numbers to as many buckets as there are rows ($k$ buckets for $k$ rows)
     + Of course, there may be unfilled buckets (or buckets with more than 1 row), but that is insignificant, as long as $k$ is large enough and there are not too many collisions
@@ -176,28 +180,49 @@ Numeric data can be used directly for similarity measurements. However transform
     + For each row $r$
       + Compute $h_1(r), h_2(r),..., h_n(r)$
       + For each column $c$:
-        + If $c$ has 1 in row $r$: 
-  + Example:
+        + If $c$ has 1 in row $r$:
+          + For i = 1, 2, ..., n:
+            $SIG(i, c) = min(SIG(i, c), h_i(r))$
+  + Example:  
+  ![](assets/actual_minhash.png)
 
-4. Word embeddings / Document embeddings
-   + Represent words by small, dense vector. The idea is that similar words are near each other in high-dimensional space
-   + Technique: Word2Vec: Skip-gram, CBOW
-     - Explain Skip-gram here? (sir this is not a NLP class) 
-   + We want to represent whole documents, not just words. Doc2Vec is an extension of Word2Vec that create document vector embeddings
-5. LDA: Latent topic model
-   +
-
-### Time-series data
-Audio data is time-series data btw
-1. SAX
-2. Discrete Wavelet Transform
-   + We consider the use of wavelet transformations as a dimensionality reduction technique to permit efficient similarity search over high-dimensional time-series data
-   + [Too long will read later](https://infolab.usc.edu/csci599/Fall2003/Time%20Series/Similarity%20search%20over%20time-series%20data%20using%20wavelets.pdf)
-3. Discrete Fourier Transform
+#### 4. Word embeddings / Document embeddings
+   + Word embeddings are representations of words as vectors with regards to their meanings, unlike bag-of-words
+   + The idea: similar words are near each other in high-dimensional space; 
+   + Technique: Word2Vec with Skip-gram or CBOW. We explain Skip-gram with negative sampling 
+   + Skip-gram actually trains a classification model for the task:  **"Is word w likely to show up near word c"**. We take the weights of the words after training as embeddings.
+     + The training for the model is self-supervised: a word $w$ that appears near the target word $c$ acts as an answer to the classifier
+     + Negative example are created with target word $c$ and random words $w$ from the vocab (they shouldn't be truly random but I'm not gonna go too deep here).
+     + We want the chance of positive example being a neighbour high and the chance of negative examples being a neighbour low
+     + Thus we want to minimize the loss function:
+     $$L = -log[P(+ | \ w, c_{pos}) \ \prod_{i = 1}^kP(- | \ w, c_{neg_i})]$$
+     + The positive probability is computed based on the intuition that the embeddings are similar if they have high dot product; the sigmoid function is used to turn the product into a probability:
+     $$P(+ \ | w, c) = \sigma (c\cdot w) = 1/(1 + exp(-c \cdot w))
+     + The model is trained with gradient descent. 
+   + We may want to represent whole documents, not just words. Doc2Vec is an extension of Word2Vec that create document vector embeddings
+#### 5. Latent topic model
+   + Latent topic models are used to discover abstract topics of a collection of documents. A latent topic model assumes that each document is a mixture of topics, and each topic is a distribution over words. They transform documents into dense topic distribution vectors
 ### Image data
-1. CNN
-   + More embeddings :(
+For similarity search, we usually transform images into fixed-length vectors. Vector-based  representation encode higher-level features such as edges, textures, and shapes within an image.
++ Convolutional Neural Network
+  + A neural network that detect edges, textures, shapes, and objects hierarchically.
+  + As an image passes through a CNN:
+    + Early layers learn low-level features (edges, color)
+    + Middle layers learn textures, patterns
+    + Deep layers learn object-level semantics
+  + The neural network actually output a label for classification, but we take the output of the last layer just before the prediction layer to get the embedding of the image.
 ### Graph data
+Graphs consist of nodes and edges (that connect the nodes, duh). Early on, multiple graph similarity metrics were defined, such as the Graph Edit Distance or the Maximum Common Subgraph. Those used "normal" representation of graphs (adjacency matrix/ adjacency list). These techniques do not scale well for large graphs, however.
+Graph embeddings are a common, modern way to represent graphs.
++ Graph2Vec
+  + Graph2Vec is a method to learn distributed representations of graphs, similar to Doc2vec 
+  + Each graph is viewed as a document and the rooted subgraphs around every node in the graph are viewed as words that compose the document
+  + There are two main components in this method:
+    + A procedure to generate rooted subgraphs around every node
+      + Consider each node with a label. We want to generate subgraphs from nodes with increasing degree, up to a certain degree (also called k-hop subgraph)
+      + We iteratively enrich node labels by incorporating information from their neighbors
+        + To get a subgraph for a node $v$ at degree d, we merge its d - 1 degree subgraph with all its neighbours' d - 1 degree subgraph
+    + The procedure to learn embeddings of the given graphs (by skip-gram with negative sampling, just like Doc2vec)
 
 
 
