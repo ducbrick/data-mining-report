@@ -15,6 +15,12 @@
   - [Transforming different data types](#transforming-different-data-types)
     - [Numeric data](#numeric-data)
     - [Text data (N gram is bad just use embeddings)](#text-data-n-gram-is-bad-just-use-embeddings)
+      - [3. Minhashing](#3-minhashing)
+        - [3.1. Characteristic matrix:](#31-characteristic-matrix)
+        - [3.2. Minhashing a set](#32-minhashing-a-set)
+        - [3.3 Minhashing and Jaccard similarity](#33-minhashing-and-jaccard-similarity)
+        - [3.4 Finally, Signature](#34-finally-signature)
+        - [3.5 Actually computing minhash signatures](#35-actually-computing-minhash-signatures)
     - [Time-series data](#time-series-data)
     - [Image data](#image-data)
     - [Graph data](#graph-data)
@@ -35,7 +41,6 @@
       - [Local insertion](#local-insertion)
       - [Periodical rebuild](#periodical-rebuild)
     - [Deletion](#deletion)
-      - [Local deletion](#local-deletion)
     - [Summary](#summary)
   - [Small-World Graph](#small-world-graph)
   - [Hierarchical Navigable Small World Graph](#hierarchical-navigable-small-world-graph)
@@ -128,16 +133,57 @@ Numeric data can be used directly for similarity measurements. However transform
    + Each document is represented as a **vector** of size V, where V equals the size of the vocabulary (the number of unique words from all documents)
    + Each dimension is the count (or weight, like TF-IDF) of the corresponding word
 2. K-shingles
-   + a k-shingles is a substring of length k that appears in a text.
-   + by breaking a document into unique k-shingles, you get a set that represent the document.
-		- example here
-   + Shingles can be hashed to reduce size. However, the space needed is still large. We want to replace sets with smaller representations called "signatures"
-3. Minhashing
-   + Characteristic matrix: each column is a set, the rows are the elements
-   +  To minhash a set from the matrix: pick a permutations of the rows. The minhash value of the set is the row number of the first row where the column has a 1
-   +  Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$. the vector $\[h_1(S), ..., h_n(S)]$  is the signature of the set S.
+   + a k-shingles is a substring of length k that appears in a text (document).
+   + by breaking a document into unique k-shingles, you get a **set** that **represent the document**.
+	    + for example, the set of 2-shingles for the text abcdab is {ab, bc, cd, da}
+   + Shingles can be hashed to reduce size. However, the space needed is still large. We want to replace sets with smaller representations
+   + This representation is called "signature" and is created from the *minhashing* process
+#### 3. Minhashing  
+##### 3.1. Characteristic matrix:
+  + A characteristic matrix is a representation of a collection of sets
+      + each column corresponds to a set
+      + each row corresponds to an element in the "universal set", which is the set of all elements from all sets
+      + the value of position (r, c) is 1 if the element in row r is a member of the set in column c; else the value is 0 
+      ![](assets/chara_matrix.png)
+        + for this example: set $S_1$ has elements a and d; set $S_2$ has element c only;... . {a, b, c, d, e} is the universal set    
+##### 3.2. Minhashing a set
+  + To minhash a set from the matrix, first we pick a permutation of the rows. 
+  + The minhash value of the set is the element of the first row where the column has a 1
+  ![](assets/chara_matrix_permutation.png)
+    + The *minhash* of the set $S_1$ **for this row permutation** (b, e, a, d, c) would be $h(S_1) = a$
+##### 3.3 Minhashing and Jaccard similarity
+  + The probability that the minhash (for a permutation of rows) produces the same values for two sets is equal to the Jaccard similarity of those sets
+    + The chance of minhash picking the same row for both set (in the characteristic matrix) is equal to their Jaccard probability
+  + Proof:
+    + Consider the columns for two sets $S_1$ and $S_2$. The rows can be divided into 3 types:
+      + Type X rows have 1 in both columns
+      + Type Y rows have 1 in only one column
+      + Type Z rows have 0 in both columns
+    + Let there be $x$ rows of type X and $y$ rows of type Y. 
+      + The Jaccard similarity of the two sets would be: $SIM(S_1, S_2) = x/(x + y)$
+      + Now we want to know chance of Minhash picking the same row for both set, or the chance of $h(S_1) = h(S_2)$
+        + Consider a random permutation of the rows, we proceed from the top to find $h(S_1)$ and $h(S_2)$
+        + The chance of $h(S_1) = h(S_2)$ is the chance that the first row that is *not* a Z row, is a X row
+        + And that chance is $x/(x +y)$
+    + Illustration:
+##### 3.4 Finally, Signature
+  + Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$
+    + The *minhash signature* of set S is the vector [$h_1(S), h_2(S),..., h_n(S)$]
+    + We can form a *signature matrix* with each column being the *minhash signature* of a set
    +  Unfortunately, just permutating a large characteristic matrix explicitly is already time-consuming
-       + How to compute minhash signatures then?
+       + We need another way to compute the  *signature matrix*
+##### 3.5 Actually computing minhash signatures
+  + We can *simulate* the effect of a random permutation by a random hash function that maps row numbers to as many buckets as there are rows ($k$ buckets for $k$ rows)
+    + Of course, there may be unfilled buckets (or buckets with more than 1 row), but that is insignificant, as long as $k$ is large enough and there are not too many collisions
+  + The process:
+    + We pick $n$ randomly chosen hash functions $h_1, h_2, ..., h_n$ on the rows (in place of $n$ permutations)
+    + Let $SIG(i, c)$ be the element of the *signature matrix* for the *i*th hash function and column c (as in, the element at position (i, c) of the *signature matrix*). Initilize all $SIG(i, c)$ to $\infty$
+    + For each row $r$
+      + Compute $h_1(r), h_2(r),..., h_n(r)$
+      + For each column $c$:
+        + If $c$ has 1 in row $r$: 
+  + Example:
+
 4. Word embeddings / Document embeddings
    + Represent words by small, dense vector. The idea is that similar words are near each other in high-dimensional space
    + Technique: Word2Vec: Skip-gram, CBOW
@@ -208,6 +254,8 @@ Một họ hàm băm nhạy cục bộ (Locality-sensitive families) cần phả
     + [The relative neighborhood graph of a finite planar set](RNG.pdf)
     + [Fast Approximate Nearest-Neighbor Search with k-Nearest Neighbor Graph](Fast_Approximate_Nearest-Neighbor_Search_with_k-Ne.pdf)
 + A graph where every node `u` has edges to `k` other nodes that is closest to it
++ Example K-NNG with `10` nodes and Euclidian distance:
+![](assets/knng.png)
 + Many (approximate) similarity search algos can be performed on an already constructed K-NNG with better time complexity than brute-force
 + The problem then becomes an efficient construction algorithm
 + Brute force: `O(n^2 * d)` where
@@ -249,6 +297,14 @@ loop
     + `m` is the number of iterations
     + Worst case: same as brute-force
     + In practice: `m * k <<<< n` -> very efficient, authors claim `O(n^1.14 * d)` found on empirical dataset
+![1](assets/nndescent1.png)
+![2](assets/nndescent2.png)
+![3](assets/nndescent3.png)
+![4](assets/nndescent4.png)
+![5](assets/nndescent5.png)
+![6](assets/nndescent6.png)
+![7](assets/nndescent7.png)
+![8](assets/nndescent8.png)
 + Advantages:
     + General: works with any arbitary distance function `d(u, v)`
     + Scalable: typically has acceptable time complexity
@@ -271,11 +327,11 @@ loop
     + For every `v` neighboring `u`, compute `d(q, v)` and mark it as discovered
     + Repeat until maximum number of iterations has been reached, or the best discovered node hasn't been updated recently, or other conditions
     + Pick `k` best discovered nodes as result
-    + Time complexity: `O(m * k_graph * d)` where
+    + Time complexity: `O(m * (log(m) + k_graph * (d + log(m))))` where
         + `m`: the number of iteration
+        + `log(m)`: cost of inserting an item to a heap
         + `k_graph`: the number of neighbor each node has
-        + Worst case: `O(n * d)`
-        + In practice: much more time efficient
+        + In practice: much more time efficient than brute-force
 ```
 randomly pick starting_nodes
 
@@ -297,6 +353,10 @@ loop
 
 pick k best nodes from explored_nodes
 ```
+![1](assets/knns1.png)
+![2](assets/knns2.png)
+![3](assets/knns3.png)
+![4](assets/knns4.png)
 
 ### Insertion
 + K-NNG doesn't naturally support efficient incremental updates and is instead better fitted for processing batch query
@@ -318,7 +378,7 @@ pick k best nodes from explored_nodes
 + Cons: Rebuilding is computationally intensive
 ### Deletion
 + Even more tricky than insertion
-#### Local deletion
++ Local deletion
 + Same idea as local insertion
 + When removing node `u` from an existing K-NNG, update, adjust and optimize only its neighbors' neighbor list
 + Pros: Fast
@@ -326,13 +386,20 @@ pick k best nodes from explored_nodes
 + Possible solution: periodical rebuild
 ### Summary
 + Pros:
+    + Simple and intuitive
     + (Technically) Applicable for any distance function
     + Captures the local similarity structure of data
     + Fast and fairly accurate query
 + Cons:
-    + Expensive to build
+    + Expensive to build -> poor scalability
     + Not as effective when having to deal with dynamic updates
     + Construction algorithm and parameter `k` affects the quality of the graph and the balance between accuracy vs speed
+    + Depending on the dataset, the result graph can get disjointed
+    + Because of the reason above, query may not be super optimal
++ Best fit for:
+    + Static dataset: No updates, graph doesn't degrade, no need to rebuild
+    + Moderately-sized dataset: Suboptomal performance is acceptable -> exchange it for simplicity
+    + Dense dataset: The graph is less disjointed and more connected, construction and query is faster and more accurate
 
 ## Small-World Graph
 
