@@ -191,8 +191,9 @@ This section will BRIEFLY introduce transformation methods for different data ty
   + Example:  
   ![](assets/actual_minhash.png)
 
-#### 4. Word embeddings / Document embeddings
-   + Word embeddings are representations of words as vectors with regards to their meanings, unlike bag-of-words
+#### 4. Vector embeddings
+   + "An *embedding* is a mapping of objects into a continuous vector space. We can see that Bag of Words and Minhash signatures are also vector representations of documents.
+   + However, here we consider Word/Document embeddings as vector representations **with regards to their meanings** (or we can just call this Semantic embedding idk)
    + The idea: similar words are near each other in high-dimensional space; 
    + Technique: Word2Vec with Skip-gram or CBOW. We explain Skip-gram with negative sampling 
    + Skip-gram actually trains a classification model for the task:  **"Is word w likely to show up near word c"**. We take the weights of the words after training as embeddings.
@@ -207,8 +208,8 @@ This section will BRIEFLY introduce transformation methods for different data ty
    + We may want to represent whole documents, not just words. Doc2Vec is an extension of Word2Vec that create document vector embeddings
 #### 5. Latent topic model
    + Latent topic models are used to discover abstract topics of a collection of documents. A latent topic model assumes that each document is a mixture of topics, and each topic is a distribution over words. They transform documents into dense topic distribution vectors
-### Image data
-For similarity search, we usually transform images into fixed-length vectors. Vector-based  representation encode higher-level features such as edges, textures, and shapes within an image.
+### Visual (image) data
+For similarity search, we usually transform images into fixed-length, dense vectors. Vector-based representation encodes higher-level features such as edges, textures, and shapes within an image.
 + Convolutional Neural Network
   + A neural network that detect edges, textures, shapes, and objects hierarchically.
   + As an image passes through a CNN:
@@ -216,6 +217,23 @@ For similarity search, we usually transform images into fixed-length vectors. Ve
     + Middle layers learn textures, patterns
     + Deep layers learn object-level semantics
   + The neural network actually output a label for classification, but we take the output of the last layer just before the prediction layer to get the embedding of the image.
+### Audio data
++ Traditional feature extraction
+  + Raw audio signal must first be transformed into the frequency domain using techniques like Discrete Fourier Transform (DFT) (in implementation we use Fast Fourier Transform (FFT))
+  + After this different techniques are used to extract features, such as Chroma (for music) or MFCC (for general audio processing)
++ Vector embeddings
+  + Modern methods make use of neural network models to create meaningful representations of audio data.
+  + Some popular names are Wav2Vec, Wav2Vec 2.0, OpenL3 and CLAP
+### Video data
+A video is a sequence of image frames with synchronized audio. Again, neural networks model provide a mean to create dense vector representation of videos. These vector are Multimodal embeddings, as they represent data from both images and audio.
++ Two types of embedding: Joint embedding (early fusion) and independent embedding (late fusion)
++ For late fusion:
+  + Visual and audio embeddings are extracted separately from the video's frame and audio
+  + The embeddings can then be added together using a weighted linear sum to create the final representation
++ For early fusion:
+  + Both image and audio data are represented in the same embedding space, with the same idea that similar concepts should be closer to each other
+    + Many other modalities are represented like this: text-image, text-audio,...
+  + The model is trained normally with Contrastive Learning
 ### Graph data
 Graphs consist of nodes and edges (that connect the nodes, duh). Early on, multiple graph similarity metrics were defined, such as the Graph Edit Distance or the Maximum Common Subgraph. Those used "normal" representation of graphs (adjacency matrix/ adjacency list). These techniques do not scale well for large graphs, however.
 Graph embeddings are a common, modern way to represent graphs.
