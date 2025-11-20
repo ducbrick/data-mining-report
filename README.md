@@ -452,8 +452,9 @@ pick k best nodes from explored_nodes
 ### Constructing the NSW graph: 
 + The graph is built incrementally, as in the nodes are added one by one.  
 #TODO 
-  - [ ] fix pseudocode
-  - [ ] add pseudocode for hnsw
+  - [ ] fix pseudocode (might just delete this part)
+  - [x] add pseudocode for hnsw
+  - [ ] complexity for hnsw
 ```
 For each insertion of new vertex x:
   curr <- entry_node
@@ -476,22 +477,95 @@ For each insertion of new vertex x:
 ![](assets/prob_skiplist.png)
 ### The HNSW graph
 + Taking the inspiration of the prob skip list, we create a graph where links are separated across different layers. At the top layer, we have the longest links, and at the bottom layer, we have the shortest.
-+ To search, start at the top layer. Traverse edges in each layer just like in NSW until reaching a local minimum. Then shift to the next layer and begin searching again. This process is repeated until the local minimum at the bottom layer (layer 0) is found.
-![](assets/hnsw_search.png)
-
 ### HNSW graph construction
 + HNSW graph is built incrementally like NSW. 
 + L is the number of layers
-+ The probability of a vector (a node) insertion at a given layer is given by a probability function, normalized by a *level multiplier* $m_L$
++ The probability of a vector (a node) insertion at a given layer is given by a probability function, normalized by a *level multiplier* $m_L$. The level of a node is determined
 + $ef$ is the parameter for the number of closest neighbors to the inserted vector $q$
-+ Insertion steps:
-  + Start at the top layer. $ef$ is set to $1$
-  + Greedily search for $ef$ closest vertices to $q$, then move down the layers and repeat until we reach the chosen layer for $q$
-  + Set $ef$ to a pre-defined value called $efConstruction$. *Greedily* find $efConstruction$ closest vertices to our query vectors
-  + Select M of those vertices to add as neighbor of $q$. Selection can be done by simple choosing the M closest vertices from the candidates, or with a heuristic (which I'm not gonna explain)
-    + The heuristic also use two parameters to define the maximum number of connections (edges) a vertex can have: $M_{max}$ for layer higher than layer 0, and $M_{max0}$ for layer 0. 
-  + Choose the nearest vertex from those neighbors as the entry point for the next layer, shift down and repeat until ground layer (layer 0)
++ The insertion is divided into two phases
+  + Phase 1:
+    + Start at the top layer. $ef$ is set to $1$
+    + Greedily search for $ef$ closest vertices to $q$, then move down the layers and repeat until we reach the chosen layer for $q$
+  + Phase 2:
+    + Set $ef$ to a pre-defined value called $efConstruction$.
+    + *Greedily* find $efConstruction$ closest vertices to our query vectors
+    + Select M of those vertices to add as neighbor of $q$. Selection can be done by simple choosing the M closest vertices from the candidates, or with a heuristic (which I'm not gonna explain)
+      + The heuristic also use two parameters to define the maximum number of connections (edges) a vertex can have: $M_{max}$ for layer higher than layer 0, and $M_{max0}$ for layer 0. 
+    + Choose the nearest vertex from those neighbors as the entry point for the next layer, shift down and repeat until ground layer (layer 0)
   ![](assets/hsnw_insert.png)
+  + Pseudocode for insertion 
+```
+INSERT(hnsw, q, M, Mmax, efConstruction, mL)
+Input: multilayer graph hnsw, new element q, number of established
+connections M, maximum number of connections for each element
+per layer Mmax, size of the dynamic candidate list efConstruction, normalization factor for level generation mL
+Output: update hnsw inserting element q
+  W = empty list for the currently found nearest elements
+  ep = get enter point for hnsw
+  L = level of ep // top layer for hnsw
+  l = ⌊-ln(unif(0..1))∙mL⌋ // get new element’s level
+  for lc = L to l+1 // first phase
+    W = SEARCH-LAYER(q, ep, ef=1, lc)
+    ep = get the nearest element to q in W
+  for lc = min(L, l) to 0 // second phase
+    W = SEARCH-LAYER(q, ep, efConstruction, lc)
+    neighbors = SELECT-NEIGHBORS(q, W, M, lc) // simple selection or heuristic
+    add bidirectional connections from neighbors to q at layer lc
+    for each e in neighbours // shrink connections if needed
+      if size of neighbourhood(e) > Mmax // shrink connections of e 
+      // if lc = 0 then Mmax = Mmax0
+      set neighbourhood(e) = SELECT-NEIGHBORS(e, eConn, Mmax, lc) // again, simple or heuristic
+  ep = W
+  if l > L
+    set enter point for hnsw to q
+```
+```
+SEARCH-LAYER(q, ep, ef, lc)
+Input: query element q, enter points ep, number of nearest to q elements to return ef, layer number lc
+Output: ef closest neighbors to q
+C = set of candidates to explore (priority queue by distance)
+W = priority queue (by distance) of found nearest neighbors
+add ep to C and W
+while │C│ > 0
+  c = nearest element to q in C
+  f = furthest element to q in W
+  if distance(c, q) > distance(f, q)
+    break // all elements in W are evaluated
+  for each e from neighbourhood(c) at layer l_c // update C and W
+    if e not visited
+      mark e as visited
+      f = furthest element to q in W
+      if distance(e, q) < distance(f, q) or │W│ < ef
+        add e to C and W
+        if │W│ > ef
+          remove furthest element to q in W
+return W
+```
+
+### Searching in HNSW graph
++ To search, start at the top layer　with a single entry point. Traverse edges in each layer just like in NSW until reaching a local minimum. Then shift to the next layer and begin searching again. This process is repeated until the ground layer (layer 0) is reached. Then the algorithm search for $ef$ closest neighbor to the query vector ($ef$ must be bigger than the number of desired output $K$) 
+```
+K-NN-SEARCH(hnsw, q, K, ef)
+Input: multilayer graph hnsw, query element q,
+number of nearest neighbors to return K,
+size of the dynamic candidate list ef
+Output: K nearest elements to q
+W = set for the current nearest elements
+ep = enter point for hnsw
+L = level of ep // top layer for hnsw
+for lc = L to 1
+  W = SEARCH-LAYER(q, ep, ef=1, lc)
+  ep = get nearest element from W to q
+  W = SEARCH-LAYER(q, ep, ef, lc =0)
+return K nearest elements from W to q
+```
+![](assets/hnsw_search.png)
+
+### Complexity and Effects of parameters
++ Search complexity: 
++ Construction complexity:
++ Memory cost:
++ $m_L$ and $M_{max0}$ also influence performance of the graph
 
 
 ## Product quantization
