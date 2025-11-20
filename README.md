@@ -263,24 +263,30 @@ Graph embeddings are a common, modern way to represent graphs.
 [Ball-tree](ball-tree.md)
 
 ## Locality-sensitive hashing
+- Locality-sensitive hashing là một kỹ thuật tìm kiếm các phần tử có độ tương đồng với độ chính xác cao và thời gian tìm kiếm dưới tuyến tính. Kỹ thuật này có thể áp dụng cho nhiều loại dữ liệu khác nhau, đặc biệt là các loại dữ liệu có thể biểu diễn hoặc chuyển đổi về vector nhiều chiều hoặc tập hợp đặc trưng.
+- Trước khi thực hiện tìm kiếm bằng LSH, ta sẽ cần tiền xử lí dữ liệu để đưa chúng về các vector để có thể áp dụng các hàm băm lên chúng. 
+
 ### Tổng quan về Locality-sensitive families:
 Một họ hàm băm nhạy cục bộ (Locality-sensitive families) cần phải có đủ 3 tiêu chí sau để có thể hiệu quả trong việc phân biệt rõ ràng các cặp phần tử có độ tương đồng cao và thấp khác nhau:  
 1. Tính nhạy với sự tương đồng: đây là thuộc tính cốt lõi của hàm băm để phân biệt được các cặp tương đồng hay không tương đồng:
    - Nếu 2 phần tử có độ tương đồng cao, hàm băm phải có xác suất cao tạo ra cùng một kết quả.
    - Nếu 2 phần tử có độ tương đồng thấp, hàm băm phải có xác suất thấp tạo ra cùng một kết quả.
-2. Tính độc lập về mặt thống kê: tức là kết qủa các hàm băm trong cùng một họ hàm không ảnh hưởng đến nhau. Điều này cho phép ta sủ dụng quy tắc nhân xác suất để có thể ước lượng xác suất cho kết quả của hai hay nhiều hàm băm cùng họ.
+2. Tính độc lập về mặt thống kê: kết quả các hàm băm trong cùng một họ hàm không ảnh hưởng đến nhau. Điều này cho phép ta sử dụng quy tắc nhân xác suất để có thể ước lượng xác suất cho kết quả của hai hay nhiều hàm băm cùng họ.
 3. Tính hiệu quả, theo hai cách:
    - Họ hàm băm phải có thể xác định được các cặp ứng viên trong thời gian nhanh hơn nhiều so với việc so sánh tất cả các cặp trong O(n<sup>2</sup>). Ví dụ: Kĩ thuật minhash đáp ứng được tiêu chí này vì việc tính toán minhash cho tất cả phần tử chỉ mất độ phức tạp tuyến tính O(n), sau đó những tập có gái trị tương đồng sẽ được gom lại trong một bucket. Từ đây việc kiểm tra chỉ cần thực hiện trong các bucket này thay vì cả tập hợp ban đầu.
-   - Họ hàm băm phải có khả năng kết hợp để cải thiện hiệu suất: một hàm băm có thể chưa phân loại chính xác nên ta có thể kết hợp nhiều hàm băm lại với nhau để tạo ra những hàm tốt hơn, phòng tránh các trường hợp dương tính giả hay âm tính giả (những cặp không giống nhau được gom chung vào một bucket và ngược lại).
+   - Họ hàm băm phải có khả năng kết hợp để cải thiện hiệu suất: có thể kết hợp nhiều hàm băm lại với nhau để tạo ra những hàm tốt hơn, phòng tránh các trường hợp dương tính giả hay âm tính giả (những cặp không giống nhau được gom chung vào một bucket và ngược lại).
 
 ### Tổng quan về Locality-sensitive hashing:
-Đây là một kĩ thuật để giúp ta tìm được những phần tử có độ tương đồng cao nhanh chóng và hiệu quả, bằng cách sử dụng các hàm băm nhạy cục bộ (locality-sensitive functions) để băm các phần tử nhiều lần vào những bucket, sao cho những phần tử có độ tương đồng cao sẽ có xác suất cao được băm vào cùng một bucket và những phần tử có độ tương đồng thấp thì sẽ có xác suất cao được băm vào những bucket khác nhau. Bằng cách này, ta có thể giảm đáng kể khối lượng tính toán khi chỉ cần so sánh những phần tử trong cùng một bucket với nhau thay vì phải so sánh tất cả các cặp phần tử.
-
+Đây là một kĩ thuật sử dụng các hàm băm nhạy cục bộ (locality-sensitive functions) để băm các phần tử rồi gom các ứng viên (các phần tử có xác suất tương đồng cao) vào cùng một bucket. Bằng cách này, ta có thể giảm đáng kể khối lượng tính toán khi chỉ cần so sánh những phần tử trong cùng một bucket với nhau thay vì phải so sánh tất cả các cặp phần tử.
 ### Locality-sensitive hashing cho minhash signatures:
-#### Kĩ thuật phân dải (banding technique):
-1. Tổng quan: nếu ta đã thực hiện minhashing để có được ma trận chữ kí (signature matrix), một cách hiệu quả để thực hiện phép băm là sử dụng kĩ thuật phân dải (banding). Giả sử ma trận chữ kí có n hàng, ta chia n hàng này thành b dải, mỗi dải gồm r hàng. Với mỗi dải, ta sử dụng một hàm băm để băm các vector cột trong dải đó vào nhiều bucket khác nhau. Chúng ta có thể sử dụng một hàm băm cho tất cả các dải, nhưng ta sẽ dùng bộ bucket riêng cho mỗi dải, để những vector cột giống nhau ở các dải khác nhau không bị gom chung một bucket. Sau đó những cặp phần tử được băm vào cùng một bucket ở mỗi dải sẽ trở thành những cặp ứng viên để kiểm tra chính xác độ tương đồng.
+Cách truyền thống để thực hiện locality-sensitive-hash là sử dụng shingling, minhashing và banding.
+#### Shingling và Minhashing:
+Đầu tiên, ta cần chuyển dữ liệu dạng text sang các vector thưa sử dụng k-shingling, sau đó sử dụng minhash để tạo ra các chữ kí (signatures). Từ các chữ kí này, ta sử dụng kĩ thuật phân dải (banding) để lọc ra các cặp ứng viên.
+#### Kĩ thuật phân dải (banding):
+1. Tổng quan: 
+- Sau bước minhashing, ta có ma trận chữ kí với n hàng, ta chia n hàng này thành b dải, mỗi dải gồm r hàng. Với mỗi dải, ta sử dụng một hàm băm để băm các vector cột trong dải đó vào nhiều bucket khác nhau. Chúng ta có thể sử dụng một hàm băm cho tất cả các dải, nhưng ta sẽ dùng bộ bucket riêng cho mỗi dải, để những vector cột giống nhau ở các dải khác nhau không bị gom chung một bucket. Sau đó những cặp phần tử được băm vào cùng một bucket ở mỗi dải sẽ trở thành những cặp ứng viên để kiểm tra chính xác độ tương đồng.
 2. Phân tích:
-- Giả sử một cặp phần tử có độ tương đồng Jaccard là s, người ta chứng minh được rằng xác suất minhash signatures của chúng trùng khớp nhau trong một hàng bất kì cũng là s. Ta sẽ tính toán xác suất những phần tử này trở thành cặp ứng viên:
+- Giả sử một cặp phần tử có độ tương đồng Jaccard là s, xác suất minhash signatures của chúng trùng khớp nhau trong một hàng bất kì cũng là s:
    + Xác suất signature của chúng trùng khớp trong mọi hàng của một dải: s<sup>r</sup>
    + Xác suất signature của chúng không trùng khớp trong ít nhất một hàng của một dải: 1 - s<sup>r</sup>
    + Xác suất signature của chúng không trùng khớp trong ít nhất một hàng của mỗi dải: (1 - s<sup>r</sup>)^<sup>b</sup>
@@ -290,6 +296,192 @@ Một họ hàm băm nhạy cục bộ (Locality-sensitive families) cần phả
    + Phần giữa tăng vọt đột ngột.
    + Phần bên phải cao, gần 1.
 - Phần dốc ở giữa giúp ta lọc dữ liệu đúng như mong muốn. Điểm mà đường cong bắt đầu dốc lên xấp xỉ bằng (1/b)<sup>(1/r)</sup>. Bằng cách điều chỉnh b và r, ta có thể di chuyển ngưỡng này cho phù hợp với bài toán. 
+
+#### Triển khai:
+**1. Tạo tập Shingle:** 
+```
+Function K_SHINGLING(document, k):
+    // Convert document to set of k-character shingles
+    
+    // Preprocess text
+    text = to_lowercase(document)
+    text = remove_extra_whitespace(text)
+    
+    // Create shingle set
+    shingles = empty_set()
+    
+    For i from 0 to (length(text) - k):
+        shingle = text[i : i+k]
+        shingles.add(shingle)
+    
+    Return shingles
+
+Function CREATE_VOCABULARY(document_list, k):
+    // Create vocabulary of all shingles from corpus
+    
+    vocabulary = empty_set()
+    
+    For each document in document_list:
+        shingles = K_SHINGLING(document, k)
+        vocabulary = vocabulary ∪ shingles
+    
+    Return vocabulary
+
+Function CONVERT_TO_VECTOR(shingles, vocabulary):
+    // Convert shingle set to one-hot encoded vector
+    
+    vector = zero_array(length(vocabulary))
+    
+    For each shingle in shingles:
+        If shingle in vocabulary:
+            index = vocabulary.find_index(shingle)
+            vector[index] = 1
+    
+    Return vector
+```
+**2. Tạo chữ kí (Minhashing):**
+```
+Function CREATE_MINHASH_FUNCTIONS(num_hash_functions, vocab_size):
+    // Create n hash functions using random permutations
+    
+    hash_functions = []
+    
+    For i from 1 to num_hash_functions:
+        permutation = random_permutation([0, 1, 2, ..., vocab_size-1])
+        hash_functions.append(permutation)
+    
+    Return hash_functions
+
+Function COMPUTE_MINHASH_SIGNATURE(sparse_vector, hash_functions):
+    // Create MinHash signature from sparse vector
+    
+    signature = []
+    
+    For each permutation in hash_functions:
+        min_hash_value = INFINITY
+        
+        For position from 0 to length(permutation)-1:
+            permuted_index = permutation[position]
+            
+            If sparse_vector[permuted_index] == 1:
+                min_hash_value = permuted_index
+                Break
+        
+        signature.append(min_hash_value)
+    
+    Return signature
+
+Function BUILD_SIGNATURE_MATRIX(vector_list, hash_functions):
+    // Create signature matrix for all documents
+    
+    signature_matrix = []
+    
+    For each vector in vector_list:
+        signature = COMPUTE_MINHASH_SIGNATURE(vector, hash_functions)
+        signature_matrix.append(signature)
+    
+    Return signature_matrix
+```
+**3. Tìm các cặp ứng viên với kĩ thuật phân dải:**
+```
+Function SPLIT_INTO_BANDS(signature, num_bands):
+    // Divide signature into b bands
+    
+    signature_length = length(signature)
+    
+    If signature_length % num_bands ≠ 0:
+        Error "Signature cannot be evenly divided into b bands"
+    
+    rows_per_band = signature_length / num_bands
+    bands = []
+    
+    For i from 0 to num_bands-1:
+        start_idx = i × rows_per_band
+        end_idx = start_idx + rows_per_band
+        band = signature[start_idx : end_idx]
+        bands.append(band)
+    
+    Return bands
+
+Function BUILD_LSH_INDEX(signature_matrix, num_bands, document_ids):
+    // Build LSH index using banding technique
+    
+    buckets = {}  // Dictionary: (band_id, hash_value) → document list
+    
+    For i from 0 to length(signature_matrix)-1:
+        signature = signature_matrix[i]
+        doc_id = document_ids[i]
+        
+        // Split signature into bands
+        bands = SPLIT_INTO_BANDS(signature, num_bands)
+        
+        // Hash each band
+        For band_idx from 0 to length(bands)-1:
+            band = bands[band_idx]
+            
+            // Compute hash of band
+            hash_value = hash(tuple(band))
+            
+            // Create bucket key
+            bucket_key = (band_idx, hash_value)
+            
+            // Add document to bucket
+            If bucket_key not in buckets:
+                buckets[bucket_key] = []
+            buckets[bucket_key].append(doc_id)
+    
+    Return buckets
+
+Function FIND_CANDIDATE_PAIRS(buckets):
+    // Find candidate pairs from buckets
+    
+    candidate_pairs = empty_set()
+    
+    For each bucket_key in buckets:
+        docs_in_bucket = buckets[bucket_key]
+        
+        If length(docs_in_bucket) >= 2:
+            For i from 0 to length(docs_in_bucket)-2:
+                For j from i+1 to length(docs_in_bucket)-1:
+                    doc1 = docs_in_bucket[i]
+                    doc2 = docs_in_bucket[j]
+                    
+                    pair = (min(doc1, doc2), max(doc1, doc2))
+                    candidate_pairs.add(pair)
+    
+    Return candidate_pairs
+```
+**4. Xác minh các cặp ứng viên:**
+```
+Function COMPUTE_JACCARD_SIMILARITY(shingles1, shingles2):
+    // Calculate actual Jaccard similarity
+    
+    intersection = shingles1 ∩ shingles2
+    union = shingles1 ∪ shingles2
+    
+    If length(union) == 0:
+        Return 0
+    
+    jaccard = length(intersection) / length(union)
+    
+    Return jaccard
+
+Function FILTER_SIMILAR_PAIRS(candidate_pairs, shingles_map, threshold):
+    // Verify candidate pairs and filter by threshold
+    
+    similar_pairs = []
+    
+    For each (doc1, doc2) in candidate_pairs:
+        shingles1 = shingles_map[doc1]
+        shingles2 = shingles_map[doc2]
+        
+        similarity = COMPUTE_JACCARD_SIMILARITY(shingles1, shingles2)
+        
+        If similarity >= threshold:
+            similar_pairs.append((doc1, doc2, similarity))
+    
+    Return similar_pairs
+```
 
 ## K-NNG
 + Mentioned/introduced in:
