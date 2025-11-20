@@ -444,8 +444,54 @@ pick k best nodes from explored_nodes
     + Moderately-sized dataset: Suboptomal performance is acceptable -> exchange it for simplicity
     + Dense dataset: The graph is less disjointed and more connected, construction and query is faster and more accurate
 
-## Small-World Graph
+## Navigable Small-World Graph
+[guide](https://www.pinecone.io/learn/series/faiss/hnsw/)
++ NSw graphs (and HNSW graphs) are *approximate* K-NN graph construction methods (like NN-descent!). They do not guarantee finding the *true* nearest neighbor like real K-NNGs, but are faster and scale well 
++ The idea is that if we take a proximity graph but build it so that we have both long-range and short-range links, then search times are reduced to (poly/)logarithmic complexity.
++ We use adjacency list to represent the graph.
+### Constructing the NSW graph: 
++ The graph is built incrementally, as in the nodes are added one by one.  
+#TODO 
+  - [ ] fix pseudocode
+  - [ ] add pseudocode for hnsw
+```
+For each insertion of new vertex x:
+  curr <- entry_node
+  for neighbor v of neighbors(curr):
+    if distance(v, x) < distance(curr, x)
+    curr <- v 
+  
+```
++ Searching the NSW with a query vector $q$:
+  + Begin at a pre-defined entry point (predefined???). 
+  + Search the neighbors of the entry point for the vertex closest to $q$ and move there
+  + This greedy search process continues until no better vertices can be found.
 
 ## Hierarchical Navigable Small World Graph
+[riu paper](https://arxiv.org/pdf/1603.09320)
++ As the name suggest, HNSW is a direct upgrade of NSW, with multiple layers of NSW forming a hierarchy. To understand the intuition of this hierarchy, we should first briefly examine the *probability skip list*
+### Probability skip list
++ Consist of several layer of linked lists. On the top layers, the list skips over many intermediate nodes. The number of skips decreases as we move down the layers
++ To search a skip list, start at the highest layer. If the current node key is greater than the query key, the target has been overshot, so move down to previous node in the next level.
+![](assets/prob_skiplist.png)
+### The HNSW graph
++ Taking the inspiration of the prob skip list, we create a graph where links are separated across different layers. At the top layer, we have the longest links, and at the bottom layer, we have the shortest.
++ To search, start at the top layer. Traverse edges in each layer just like in NSW until reaching a local minimum. Then shift to the next layer and begin searching again. This process is repeated until the local minimum at the bottom layer (layer 0) is found.
+![](assets/hnsw_search.png)
+
+### HNSW graph construction
++ HNSW graph is built incrementally like NSW. 
++ L is the number of layers
++ The probability of a vector (a node) insertion at a given layer is given by a probability function, normalized by a *level multiplier* $m_L$
++ $ef$ is the parameter for the number of closest neighbors to the inserted vector $q$
++ Insertion steps:
+  + Start at the top layer. $ef$ is set to $1$
+  + Greedily search for $ef$ closest vertices to $q$, then move down the layers and repeat until we reach the chosen layer for $q$
+  + Set $ef$ to a pre-defined value called $efConstruction$. *Greedily* find $efConstruction$ closest vertices to our query vectors
+  + Select M of those vertices to add as neighbor of $q$. Selection can be done by simple choosing the M closest vertices from the candidates, or with a heuristic (which I'm not gonna explain)
+    + The heuristic also use two parameters to define the maximum number of connections (edges) a vertex can have: $M_{max}$ for layer higher than layer 0, and $M_{max0}$ for layer 0. 
+  + Choose the nearest vertex from those neighbors as the entry point for the next layer, shift down and repeat until ground layer (layer 0)
+  ![](assets/hsnw_insert.png)
+
 
 ## Product quantization
