@@ -122,12 +122,15 @@ everything is a vector, vector is everything. it's really how we turn things int
 This section will BRIEFLY introduce transformation methods for different data types, with somewhat an emphasis on minhash signatures (because it's described in the book!)
 ### Text data
 #### 1. Bag of Words
-   + Each document is represented as a **vector** of size V, where V equals the size of the vocabulary (the number of unique words from all documents)
+![Bag of words example](./assets/bag-of-words.png)
+   + Each document is represented as a **vector** of size `V`, where `V` equals the size of the vocabulary (the number of unique words from all documents)
    + Each dimension is the count (or weight, like TF-IDF) of the corresponding word
+   + Pros: simple, decent performance
+   + Cons: Ignores orders, context and semantic meaning, likely high-dimensional sparse vector
 #### 2. K-shingles
    + a k-shingles is a substring of length k that appears in a text (document).
    + by breaking a document into unique k-shingles, you get a **set** that **represent the document**.
-	    + for example, the set of 2-shingles for the text abcdab is {ab, bc, cd, da}
+	    + for example, the set of 2-shingles for the text `abcdab` is `{ab, bc, cd, da}`
    + Shingles can be hashed to reduce size. However, the space needed is still large. We want to replace sets with smaller representations
    + This representation is called "signature" and is created from the *minhashing* process
 #### 3. Minhashing  
@@ -185,10 +188,10 @@ This section will BRIEFLY introduce transformation methods for different data ty
   + Example:  
   ![](assets/actual_minhash.png)
 
-#### 4. Vector embeddings
-   + "An *embedding* is a mapping of objects into a continuous vector space. We can see that Bag of Words and Minhash signatures are also vector representations of documents.
-   + However, here we consider Word/Document embeddings as vector representations **with regards to their meanings** (or we can just call this Semantic embedding idk)
-   + The idea: similar words are near each other in high-dimensional space; 
+#### 4. Semantic vector embeddings
+   + An *embedding* is a representation of objects into a continuous vector space. We can see that Bag of Words and Minhash signatures are also vector representations of documents.
+   + However, here we consider Word/Document embeddings **with regards to their meanings** (or we can just call this Semantic embedding idk)
+   + The idea: similar meaning words are near each other in high-dimensional space; 
    + Technique: Word2Vec with Skip-gram or CBOW. We explain Skip-gram with negative sampling 
    + Skip-gram actually trains a classification model for the task:  **"Is word w likely to show up near word c"**. We take the weights of the words after training as embeddings.
      + The training for the model is self-supervised: a word $w$ that appears near the target word $c$ acts as an answer to the classifier
@@ -215,7 +218,7 @@ For similarity search, we usually transform images into fixed-length, dense vect
 + Traditional feature extraction
   + Raw audio signal must first be transformed into the frequency domain using techniques like Discrete Fourier Transform (DFT) (in implementation we use Fast Fourier Transform (FFT))
   + After this different techniques are used to extract features, such as Chroma (for music) or MFCC (for general audio processing)
-+ Vector embeddings
++ Neural network model
   + Modern methods make use of neural network models to create meaningful representations of audio data.
   + Some popular names are Wav2Vec, Wav2Vec 2.0, OpenL3 and CLAP
 ### Video data
