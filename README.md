@@ -252,6 +252,10 @@ Graph embeddings are a common, modern way to represent graphs.
 # Similarity search techniques
 
 ## Brute force
++ Loop over all entry in the dataset
++ Calculate the distance to query entry
++ Return `k` best entries
++ Time complexity: `O(n * d)`
 
 ## KD (k-dimensional) tree
 [See](https://hackmd.io/@lto5/BkIeellAel)
