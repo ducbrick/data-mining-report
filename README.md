@@ -638,28 +638,12 @@ pick k best nodes from explored_nodes
     + Dense dataset: The graph is less disjointed and more connected, construction and query is faster and more accurate
 
 ## Navigable Small-World Graph
-[guide](https://www.pinecone.io/learn/series/faiss/hnsw/)
-+ NSw graphs (and HNSW graphs) are *approximate* K-NN graph construction methods (like NN-descent!). They do not guarantee finding the *true* nearest neighbor like real K-NNGs, but are faster and scale well 
-+ The idea is that if we take a proximity graph but build it so that we have both long-range and short-range links, then search times are reduced to (poly/)logarithmic complexity.
-+ We use adjacency list to represent the graph.
-### Constructing the NSW graph: 
-+ The graph is built incrementally, as in the nodes are added one by one.  
-#TODO 
-  - [ ] fix pseudocode (might just delete this part)
-  - [x] add pseudocode for hnsw
-  - [ ] complexity for hnsw
-```
-For each insertion of new vertex x:
-  curr <- entry_node
-  for neighbor v of neighbors(curr):
-    if distance(v, x) < distance(curr, x)
-    curr <- v 
-  
-```
-+ Searching the NSW with a query vector $q$:
-  + Begin at a pre-defined entry point (predefined???). 
-  + Search the neighbors of the entry point for the vertex closest to $q$ and move there
-  + This greedy search process continues until no better vertices can be found.
++ [guide](https://www.pinecone.io/learn/series/faiss/hnsw/)
++ Small world phenomenon: individuals in large social networks are connected through short chains of acquaintances, eg. "six degrees of separation"
++ Small world graph: A K-NNG that gains **small world** characteristic thanks to the addition of a number of random long-range edges
++ The result: Distant clusters get connected, (on average) short paths between 2 nodes get drastically reduced, or become possible, hence *navigable*
+![NSWG example](./assets/nswg.png)
++ Historically, NSWG was quickly succeeded by HNSWG
 
 ## Hierarchical Navigable Small World Graph
 [riu paper](https://arxiv.org/pdf/1603.09320)
