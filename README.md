@@ -594,13 +594,12 @@ pick k best nodes from explored_nodes
 ![3](assets/knns3.png)
 ![4](assets/knns4.png)
 
-### Insertion
+### Insertion & Deletion
 + K-NNG doesn't naturally support efficient incremental updates and is instead better fitted for processing batch query
-+ There are a few approaches to handle this problem
-#### Local insertion
-+ Suppose a new node `u` needs to be inserted into an existing K-NNG
-+ `u`'s neighbor list can be obtained by performing a KNN search for `u`, on the graph
-+ After that, `u`'s neighbors' neighbor list may need to be updated
+#### Local update
++ Suppose a new node `u` needs to be inserted into (or deleted from) an existing K-NNG
++ For insertion: `u`'s neighbor list can be obtained by performing a KNN search for `u`, on the graph
++ For deletion: Delete `u` and only adjust `u`'s direct neighbors
 + Pros:
     + Fast, no need to rebuild the entire graph
     + Decent enough for small scale or infrequent insertions
@@ -612,14 +611,6 @@ pick k best nodes from explored_nodes
 + After a number of insertions, perform a full rebuild of the entire graph to reduce inaccuracy
 + Pros: Ensure temporary inaccuracy is capped to a limit, and immediately after being rebuilt, the graph is as accurate as the construction algorithm allows it to be
 + Cons: Rebuilding is computationally intensive
-### Deletion
-+ Even more tricky than insertion
-+ Local deletion
-+ Same idea as local insertion
-+ When removing node `u` from an existing K-NNG, update, adjust and optimize only its neighbors' neighbor list
-+ Pros: Fast
-+ Cons: Inaccuracy increases after every deletion
-+ Possible solution: periodical rebuild
 ### Summary
 + Pros:
     + Simple and intuitive
