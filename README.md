@@ -638,13 +638,11 @@ pick k best nodes from explored_nodes
 
 ## Hierarchical Navigable Small World Graph
 [riu paper](https://arxiv.org/pdf/1603.09320)
-+ As the name suggest, HNSW is a direct upgrade of NSW, with multiple layers of NSW forming a hierarchy. To understand the intuition of this hierarchy, we should first briefly examine the *probability skip list*
-### Probability skip list
-+ Consist of several layer of linked lists. On the top layers, the list skips over many intermediate nodes. The number of skips decreases as we move down the layers
-+ To search a skip list, start at the highest layer. If the current node key is greater than the query key, the target has been overshot, so move down to previous node in the next level.
-![](assets/prob_skiplist.png)
-### The HNSW graph
-+ Taking the inspiration of the prob skip list, we create a graph where links are separated across different layers. At the top layer, we have the longest links, and at the bottom layer, we have the shortest.
++ Evolution from NSWG
++ Like NSWG, it adds random long-range edges to improve performance
++ Unlike NSWG, where these new edges are shoved into the graph as-is and in-place, HNSWG separates its edges into multiple layers, forming a *hierarchy*
++ Specifically, the many layers have varying level of density, with the top-most layer being the sparsest (thus having the most long-range edges) and the lowest layer being the densest (thus closer to a KNNG)
+![](./assets/hnswg.png)
 ### HNSW graph construction
 + HNSW graph is built incrementally like NSW. 
 + L is the number of layers
