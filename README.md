@@ -599,7 +599,7 @@ pick k best nodes from explored_nodes
 #### Local update
 + Suppose a new node `u` needs to be inserted into (or deleted from) an existing K-NNG
 + For insertion: `u`'s neighbor list can be obtained by performing a KNN search for `u`, on the graph
-+ For deletion: Delete `u` and only adjust `u`'s direct neighbors
++ For deletion: Delete `u` and only adjust `u`'s direct neighbors, or, even more simply, flag `u` as deleted
 + Pros:
     + Fast, no need to rebuild the entire graph
     + Decent enough for small scale or infrequent insertions
@@ -634,6 +634,7 @@ pick k best nodes from explored_nodes
 + Small world graph: A K-NNG that gains **small world** characteristic thanks to the addition of a number of random long-range edges
 + The result: Distant clusters get connected, (on average) short paths between 2 nodes get drastically reduced, or become possible, hence *navigable*
 ![NSWG example](./assets/nswg.png)
+![](./assets/nswg1.png)
 + Historically, NSWG was quickly succeeded by HNSWG
 
 ## Hierarchical Navigable Small World Graph
@@ -657,8 +658,16 @@ pick k best nodes from explored_nodes
 + This process is similar to querying: traverse the structure top-down, utilise the top layers to quickly approach optima and gradually refine search results as the algorithm travel deeper
   ![](assets/hsnw_insert.png)
 ### Deletion
-+ HNSWG as proposed in the original paper does not natively support true deletion, but there are some strategies
-
++ HNSWG as proposed in the original paper does not natively support true deletion
+#### Deletion flag
++ Mark nodes as *deleted*
++ Searches simply ignore and skip these deleted nodes
++ Pros: fast, safe, simple
++ Cons: graph gradually accumulates dead nodes
+#### Hard deletion
++ Completely erase nodes from graph
++ Adjust local neighbors
++ Problem: local repair is expensive, search accuracy degrade if repair is not well-performed
 ### Complexity and Effects of parameters
 + Search complexity: 
 + Construction complexity:
