@@ -5,25 +5,14 @@
     - [Recommendation system](#recommendation-system)
     - [Plagiarism/duplicate detection](#plagiarismduplicate-detection)
     - [Reverse image search](#reverse-image-search)
-    - [Financial fraud detection](#financial-fraud-detection)
 - [Data representation](#data-representation)
-  - [Final representations/formats](#final-representationsformats)
-    - [Vector embeddings](#vector-embeddings)
-    - [Probability and statistic](#probability-and-statistic)
-    - [Hashing/signature](#hashingsignature)
-    - [Token sequence](#token-sequence)
-  - [Transforming different data types](#transforming-different-data-types)
-    - [Numeric data](#numeric-data)
-    - [Text data (N gram is bad just use embeddings)](#text-data-n-gram-is-bad-just-use-embeddings)
-      - [3. Minhashing](#3-minhashing)
-        - [3.1. Characteristic matrix:](#31-characteristic-matrix)
-        - [3.2. Minhashing a set](#32-minhashing-a-set)
-        - [3.3 Minhashing and Jaccard similarity](#33-minhashing-and-jaccard-similarity)
-        - [3.4 Finally, Signature](#34-finally-signature)
-        - [3.5 Actually computing minhash signatures](#35-actually-computing-minhash-signatures)
-    - [Time-series data](#time-series-data)
-    - [Image data](#image-data)
-    - [Graph data](#graph-data)
+  - [Vector embeddings](#vector-embeddings)
+  - [Hashing/signature](#hashingsignature)
+    - [Characteristic matrix:](#characteristic-matrix)
+    - [Minhashing a set](#minhashing-a-set)
+    - [Minhashing and Jaccard similarity](#minhashing-and-jaccard-similarity)
+    - [Finally, Signature](#finally-signature)
+    - [Actually computing minhash signatures](#actually-computing-minhash-signatures)
 - [What is "similarity", how are items considered similar](#what-is-similarity-how-are-items-considered-similar)
 - [Similarity search techniques](#similarity-search-techniques)
   - [Brute force](#brute-force)
@@ -33,17 +22,24 @@
     - [Tổng quan về Locality-sensitive families:](#tổng-quan-về-locality-sensitive-families)
     - [Tổng quan về Locality-sensitive hashing:](#tổng-quan-về-locality-sensitive-hashing)
     - [Locality-sensitive hashing cho minhash signatures:](#locality-sensitive-hashing-cho-minhash-signatures)
-      - [Kĩ thuật phân dải (banding technique):](#kĩ-thuật-phân-dải-banding-technique)
+      - [Shingling và Minhashing:](#shingling-và-minhashing)
+      - [Kĩ thuật phân dải (banding):](#kĩ-thuật-phân-dải-banding)
+      - [Triển khai:](#triển-khai)
   - [K-NNG](#k-nng)
     - [NN-Descent](#nn-descent)
     - [K-NN search on a K-NNG](#k-nn-search-on-a-k-nng)
-    - [Insertion](#insertion)
-      - [Local insertion](#local-insertion)
+    - [Insertion & Deletion](#insertion-deletion)
+      - [Local update](#local-update)
       - [Periodical rebuild](#periodical-rebuild)
-    - [Deletion](#deletion)
     - [Summary](#summary)
-  - [Small-World Graph](#small-world-graph)
+  - [Navigable Small-World Graph](#navigable-small-world-graph)
   - [Hierarchical Navigable Small World Graph](#hierarchical-navigable-small-world-graph)
+    - [Search](#search)
+    - [Insertion](#insertion)
+    - [Deletion](#deletion)
+      - [Deletion flag](#deletion-flag)
+      - [Hard deletion](#hard-deletion)
+    - [Complexity and Effects of parameters](#complexity-and-effects-of-parameters)
   - [Product quantization](#product-quantization)
 <!--toc:end-->
 
@@ -80,10 +76,7 @@
 # Data representation
 real-world data are almost never of primitive types (simple numeric, categorical, etc) => Need to represent data in a format so that similarity measurement & searching techniques can be applied
 
-## Final representations/formats
-The representations/formats of the output data after running input data through transformations. Similarity search algorithms can then be applied on these output data.
-
-### Vector embeddings
+## Vector embeddings
 ![Vector embedding model](./assets/embedding-model.png)
 + Numeric vector/array, eg,. `(0.12, -0.37, 0.84, 0.09, ...)`
 + Most common
@@ -93,60 +86,23 @@ The representations/formats of the output data after running input data through 
 + Applicable pairwise similarity mesures: *Euclidean*, *Manhattan*, or [*Lp-norm*](en.wikipedia.org/wiki/Lp_space) in general, also *Cosine* and *dot product*
 + Real-world application: vector databases store data as vector embeddings for fast nearest neighbors lookup
 
-### Probability and statistic
-![LDA example](./assets/lda.png)
-+ Model uncertainty/variation instead of representing features of an entry as a vector embedding
-+ Example: *LDA* (*Latent-Dirichlet Allocation*):
-    + Describe each document as a probability distribution over topics (eg,. 60% sport, 30% technology, 10% health)
-    + Similarity is then measured using metrics like *Kullback–Leibler divergence* or *Jensen–Shannon distance*
-
-### Hashing/signature
+## Hashing/signature
 ![Hashing model example](./assets/hash.png)
-+ Compact hash code
-+ Example application: *LSH*
-+ Useful in very large-scale dataset, where representing entries as vector embeddings is unperformant
 
-### Token sequence
-![Tokenizer example](./assets/tokenizer.png)
-+ Ordered list of *token* (small meaningful unit of data in a data entry, eg,. word, subword in text, identifier, symbol, operator in programming language, DNA symbol, event)
-+ Specific representations include *k-shingles*
-+ Obtained thru *tokenization*
-+ Captures order and context
-+ Often converted into vector embeddings/hash signatures as the final format, but some measurements can be applied directly:
-    + *Edit distance*: number of changes to make 2 tokens become identical
-    + *Jaccard similarity*: ratio of overlapping tokens between 2 sequences
-    + *LCS*: Longest common subsequence
-
-## Transforming different data types
-everything is a vector, vector is everything. it's really how we turn things into vectors for different data types and tasks
-This section will BRIEFLY introduce transformation methods for different data types, with somewhat an emphasis on minhash signatures (because it's described in the book!)
-### Text data
-#### 1. Bag of Words
-![Bag of words example](./assets/bag-of-words.png)
-   + Each document is represented as a **vector** of size `V`, where `V` equals the size of the vocabulary (the number of unique words from all documents)
-   + Each dimension is the count (or weight, like TF-IDF) of the corresponding word
-   + Pros: simple, decent performance
-   + Cons: Ignores orders, context and semantic meaning, likely high-dimensional sparse vector
-#### 2. K-shingles
-   + a k-shingles is a substring of length k that appears in a text (document).
-   + by breaking a document into unique k-shingles, you get a **set** that **represent the document**.
-	    + for example, the set of 2-shingles for the text `abcdab` is `{ab, bc, cd, da}`
-   + Shingles can be hashed to reduce size. However, the space needed is still large. We want to replace sets with smaller representations
-   + This representation is called "signature" and is created from the *minhashing* process
-#### 3. Minhashing  
-##### 3.1. Characteristic matrix:
++ Minhashing
+### Characteristic matrix:
   + A characteristic matrix is a representation of a collection of sets
       + each column corresponds to a set
       + each row corresponds to an element in the "universal set", which is the set of all elements from all sets
       + the value of position (r, c) is 1 if the element in row r is a member of the set in column c; else the value is 0 
       ![](assets/chara_matrix.png)
         + for this example: set $S_1$ has elements a and d; set $S_2$ has element c only;... . {a, b, c, d, e} is the universal set    
-##### 3.2. Minhashing a set
+### Minhashing a set
   + To minhash a set from the matrix, first we pick a permutation of the rows. 
   + The minhash value of the set is the element of the first row where the column has a 1
   ![](assets/chara_matrix_permutation.png)
     + The *minhash* of the set $S_1$ **for this row permutation** (b, e, a, d, c) would be $h(S_1) = a$
-##### 3.3 Minhashing and Jaccard similarity
+### Minhashing and Jaccard similarity
   + The probability that the minhash (for a permutation of rows) produces the same values for two sets is equal to the Jaccard similarity of those sets
     + The chance of minhash picking the same row for both set (in the characteristic matrix) is equal to their Jaccard probability
   + Proof:
@@ -168,12 +124,12 @@ This section will BRIEFLY introduce transformation methods for different data ty
         + This is the chance of $h(S_1)$ being equal to $h(S_2)$, and it is exactly the same as the Jaccard similarity of the two sets
   + Unfortunately, just permutating a large characteristic matrix explicitly is already time-consuming
     + We need another way to compute the  *signature matrix*
-##### 3.4 Finally, Signature
+### Finally, Signature
   + Now, to construct a **minhash signature** for a set S, we use many (n) permutations of the rows: $h_1, h_2,..., h_n$
     + The *minhash signature* of set S is the vector [$h_1(S), h_2(S),..., h_n(S)$]
     + We can form a *signature matrix* with each column being the *minhash signature* of a set
 
-##### 3.5 Actually computing minhash signatures
+### Actually computing minhash signatures
   + We can *simulate* the effect of a random permutation by a random hash function that maps row numbers to as many buckets as there are rows ($k$ buckets for $k$ rows)
     + Of course, there may be unfilled buckets (or buckets with more than 1 row), but that is insignificant, as long as $k$ is large enough and there are not too many collisions
   + The process:
@@ -187,64 +143,6 @@ This section will BRIEFLY introduce transformation methods for different data ty
             $SIG(i, c) = min(SIG(i, c), h_i(r))$
   + Example:  
   ![](assets/actual_minhash.png)
-
-#### 4. Semantic vector embeddings
-   + An *embedding* is a representation of objects into a continuous vector space. We can see that Bag of Words and Minhash signatures are also vector representations of documents.
-   + However, here we consider Word/Document embeddings **with regards to their meanings** (or we can just call this Semantic embedding idk)
-   + The idea: similar meaning words are near each other in high-dimensional space; 
-   + Technique: Word2Vec with Skip-gram or CBOW. We explain Skip-gram with negative sampling 
-   + Skip-gram actually trains a classification model for the task:  **"Is word w likely to show up near word c"**. We take the weights of the words after training as embeddings.
-     + The training for the model is self-supervised: a word $w$ that appears near the target word $c$ acts as an answer to the classifier
-     + Negative example are created with target word $c$ and random words $w$ from the vocab (they shouldn't be truly random but I'm not gonna go too deep here).
-     + We want the chance of positive example being a neighbour high and the chance of negative examples being a neighbour low
-     + Thus we want to minimize the loss function:
-     $$L = -log[P(+ | \ w, c_{pos}) \ \prod_{i = 1}^kP(- | \ w, c_{neg_i})]$$
-     + The positive probability is computed based on the intuition that the embeddings are similar if they have high dot product; the sigmoid function is used to turn the product into a probability:
-     $$P(+ \ | w, c) = \sigma (c\cdot w) = 1/(1 + exp(-c \cdot w))
-     + The model is trained with gradient descent. 
-   + We may want to represent whole documents, not just words. Doc2Vec is an extension of Word2Vec that create document vector embeddings
-#### 5. Latent topic model
-   + Latent topic models are used to discover abstract topics of a collection of documents. A latent topic model assumes that each document is a mixture of topics, and each topic is a distribution over words. They transform documents into dense topic distribution vectors
-### Visual (image) data
-For similarity search, we usually transform images into fixed-length, dense vectors. Vector-based representation encodes higher-level features such as edges, textures, and shapes within an image.
-+ Convolutional Neural Network
-  + A neural network that detect edges, textures, shapes, and objects hierarchically.
-  + As an image passes through a CNN:
-    + Early layers learn low-level features (edges, color)
-    + Middle layers learn textures, patterns
-    + Deep layers learn object-level semantics
-  + The neural network actually output a label for classification, but we take the output of the last layer just before the prediction layer to get the embedding of the image.
-### Audio data
-+ Traditional feature extraction
-  + Raw audio signal must first be transformed into the frequency domain using techniques like Discrete Fourier Transform (DFT) (in implementation we use Fast Fourier Transform (FFT))
-  + After this different techniques are used to extract features, such as Chroma (for music) or MFCC (for general audio processing)
-+ Neural network model
-  + Modern methods make use of neural network models to create meaningful representations of audio data.
-  + Some popular names are Wav2Vec, Wav2Vec 2.0, OpenL3 and CLAP
-### Video data
-A video is a sequence of image frames with synchronized audio. Again, neural networks model provide a mean to create dense vector representation of videos. These vector are Multimodal embeddings, as they represent data from both images and audio.
-+ Two types of embedding: Joint embedding (early fusion) and independent embedding (late fusion)
-+ For late fusion:
-  + Visual and audio embeddings are extracted separately from the video's frame and audio
-  + The embeddings can then be added together using a weighted linear sum to create the final representation
-+ For early fusion:
-  + Both image and audio data are represented in the same embedding space, with the same idea that similar concepts should be closer to each other
-    + Many other modalities are represented like this: text-image, text-audio,...
-  + The model is trained normally with Contrastive Learning
-### Graph data
-Graphs consist of nodes and edges (that connect the nodes, duh). Early on, multiple graph similarity metrics were defined, such as the Graph Edit Distance or the Maximum Common Subgraph. Those used "normal" representation of graphs (adjacency matrix/ adjacency list). These techniques do not scale well for large graphs, however.
-Graph embeddings are a common, modern way to represent graphs.
-+ Graph2Vec
-  + Graph2Vec is a method to learn distributed representations of graphs, similar to Doc2vec 
-  + Each graph is viewed as a document and the rooted subgraphs around every node in the graph are viewed as words that compose the document
-  + There are two main components in this method:
-    + A procedure to generate rooted subgraphs around every node
-      + Consider each node with a label. We want to generate subgraphs from nodes with increasing degree, up to a certain degree (also called k-hop subgraph)
-      + We iteratively enrich node labels by incorporating information from their neighbors
-        + To get a subgraph for a node $v$ at degree d, we merge its d - 1 degree subgraph with all its neighbours' d - 1 degree subgraph
-    + The procedure to learn embeddings of the given graphs (by skip-gram with negative sampling, just like Doc2vec)
-
-
 
 # What is "similarity", how are items considered similar
 [See](similarity-measures.md)
