@@ -533,7 +533,7 @@ pick k best nodes from explored_nodes
 + The result: Distant clusters get connected, (on average) short paths between 2 nodes get drastically reduced, or become possible, hence *navigable*
 ![NSWG example](./assets/nswg.png)
 ![](./assets/nswg1.png)
-+ Historically, NSWG was quickly succeeded by HNSWG
++ Historically, NSWG (2012-2014) was quickly succeeded by HNSWG (2018)
 
 ## Hierarchical Navigable Small World Graph
 [riu paper](https://arxiv.org/pdf/1603.09320)
