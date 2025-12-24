@@ -537,7 +537,7 @@ pick k best nodes from explored_nodes
 ## Hierarchical Navigable Small World Graph
 + Evolution from NSWG
 + When talking about the jump from KNNG to SWG, people consider it revolutionary
-+ The jump from SWG to HNSWG isnt as significant, but is still significant in aspects like scalability
++ The jump from SWG to HNSWG isnt as significant, but is still significant in aspects like scalability, performance, accuracy
 + This data structure, in reality, is the foundation for the most modern algorithms (state of the art) like *FAISS* and modern vector databases
 + As mentioned, HNSWG evolved from SWG, so it also has small world characteristic thanks to long ranged edges
 + The difference is that SWG jams both normal edges and long-ranged edges into the same data structure, HNSWG separates edges into layers depending on its length
