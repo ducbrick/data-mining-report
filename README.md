@@ -393,6 +393,7 @@ Function FILTER_SIMILAR_PAIRS(candidate_pairs, shingles_map, threshold):
 + Once we know that a KNNG has that characteristic, we have the ability to design many algorithms to perform similarity search
 + The problem then becomes *"How can we construct a KNNG"*
 
+---
 
 + Brute force: `O(n^2 * d)` where
     + `n` is the number of nodes
