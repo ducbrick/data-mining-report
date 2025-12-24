@@ -389,7 +389,6 @@ Function FILTER_SIMILAR_PAIRS(candidate_pairs, shingles_map, threshold):
     + [Fast Approximate Nearest-Neighbor Search with k-Nearest Neighbor Graph](Fast_Approximate_Nearest-Neighbor_Search_with_k-Ne.pdf)
 + As its name suggest, a KNNG is a data structure that represents the dataset as a graph, with each data entry as a node, and each node has edges connecting it with a number of nodes closest to it, for simplicity, this number is represented by a fixed parameter `k` for every nodes
 + Example K-NNG with `10` nodes and Euclidian distance:
-![](assets/knng.png)
 + Once we know that a KNNG has that characteristic, we have the ability to design many algorithms to perform similarity search
 + The problem then becomes *"How can we construct a KNNG"*
 
@@ -450,17 +449,6 @@ loop
 
 ---
 
-![1](assets/nndescent1.png)
-![2](assets/nndescent2.png)
-![3](assets/nndescent3.png)
-![4](assets/nndescent4.png)
-![5](assets/nndescent5.png)
-![6](assets/nndescent6.png)
-![7](assets/nndescent7.png)
-![8](assets/nndescent8.png)
-
----
-
 ### K-NN search on a K-NNG
 + Essentially, searching algorithms on KNNG are heuristic/meta-heuristic algorithms
 + Specifically, can imagine the graph as the solution space, a node is a specific solution, and the heuristic algorithm moves in the direction of the nodes closest to query nodes to find global optima
@@ -493,30 +481,12 @@ pick k best nodes from explored_nodes
 
 ---
 
-![1](assets/knns1.png)
-![2](assets/knns2.png)
-![3](assets/knns3.png)
-![4](assets/knns4.png)
-
----
-
 ### Insertion & Deletion
 + K-NNG doesn't naturally support updates so we have choose a workaround
-#### Local update
-+ Suppose a new node `u` needs to be inserted into (or deleted from) an existing K-NNG
-+ For insertion: `u`'s neighbor list can be obtained by performing a KNN search for `u`, on the graph
-+ For deletion: Delete `u` and only adjust `u`'s direct neighbors, or, even more simply, flag `u` as deleted
-+ Pros:
-    + Fast, no need to rebuild the entire graph
-    + Decent enough for small scale or infrequent insertions
-+ Cons:
-    + Inaccuracy accumulates over time
-    + Not as accurate as a full rebuild
-#### Periodical rebuild
-+ Expand upon the previous solution
-+ After a number of insertions, perform a full rebuild of the entire graph to reduce inaccuracy
-+ Pros: Ensure temporary inaccuracy is capped to a limit, and immediately after being rebuilt, the graph is as accurate as the construction algorithm allows it to be
-+ Cons: Rebuilding is computationally intensive
++ Local update: When inserting a node, only adjust nearby nodes, or even more simply flag a node in case of deletion
++ As this is workaround, the quality of the graph can slowly decrease
++ To mitigate, we can perform periodical rebuild
++ Periodical rebuild: after a specific period of time, rebuild the entire graph so that the quality of the graph is always above a specific threshold
 
 ---
 
@@ -633,21 +603,6 @@ pick k best nodes from explored_nodes
 ---
 
 ### Deletion
-+ HNSWG as proposed in the original paper does not natively support true deletion
-#### Deletion flag
-+ Mark nodes as *deleted*
-+ Searches simply ignore and skip these deleted nodes
-+ Pros: fast, safe, simple
-+ Cons: graph gradually accumulates dead nodes
-#### Hard deletion
-+ Completely erase nodes from graph
-+ Adjust local neighbors
-+ Problem: local repair is expensive, search accuracy degrade if repair is not well-performed
-### Complexity and Effects of parameters
-+ Search complexity: 
-+ Construction complexity:
-+ Memory cost:
-+ $m_L$ and $M_{max0}$ also influence performance of the graph
-
-
-## Product quantization
++ Like KNNG, does not support deletion well
++ Flag nodes as deleted, later searches ignore these flagged
++ Periodical rebuild
