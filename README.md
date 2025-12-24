@@ -396,8 +396,9 @@ Function FILTER_SIMILAR_PAIRS(candidate_pairs, shingles_map, threshold):
 ---
 
 + Brute force: `O(n^2 * d)` where
-    + `n` is the number of nodes
-    + The function to measure distance between 2 nodes `d(u, v)` has time complexity of `O(d)`
+    + `n` is the number of nodes in the dataset
+    + `d` is the time complexity of the distance function
+    + This approach is obviously not practical
 ```
 for every node u                                 <- O(n)
     for every other node v                       <- O(n)
@@ -406,16 +407,23 @@ for every node u                                 <- O(n)
     find every node v closer to u than v-k       <- O(n)
     add them to u's neighbor list                <- O(k)
 ```
+
+---
+
 ### NN-Descent
 + Introduced in [Efficient K-Nearest Neighbor Graph Construction for Generic Similarity Measures](nndescent.pdf)
 + An algorithm to efficiently construct a approximate *K-NNG (K-Nearest Neighbors Graph)*
-+ Sacrifice accuracy in favor of speed
++ Approximate: the result is almost correct but not completely
++ Why approximate: sacrifice accuracy to gain speed
+
+---
+
 + Based on the assumption: A neighbor of a neighbor is likely also a direct neighbor
-+ Assumption -> Heuristic, only approximate result, not exact
-+ The basis:
-    + For every node `u`, randomly picks `k` other nodes as its nearest neighbors
-    + Run many iterations, in each, for every node `u`, computes distance between `u` and its neighbors' neighbors, improve its neighbor list accordingly
-    + Stop iterating once no further notable improvements can be made
++ Assumption -> Basically heuristic, thats why the result is approximate, not exact
++ Basically, the algorithm works as follows:
+    + Construct a random graph (random means that the the the graph has the correct number of nodes and edges, but the edges dont connect the correct pairs of nodes)
+    + Gradually improve the graph through many iterations, in each iteration, the algorithm checks every nodes and improve it based on its current neighbors
+    + The algorithm stops when no further improvements can be made
 ```
 for every node u
     randomly or heuristically pick k other nodes
@@ -431,9 +439,17 @@ loop
         stop loop
 ```
 + Time complexity: `O(m * n * k^2 * d)`
-    + `m` is the number of iterations
-    + Worst case: same as brute-force
-    + In practice: `m * k <<<< n` -> very efficient, authors claim `O(n^1.14 * d)` found on empirical dataset
+    + The time complexity basically depends on the number of iterations
+    + In reality, it is much better than brute-force
+    + When experimenting on normal dataset, authors got the time complexity of `O(n^1.14 * d)`
++ Advantages:
+    + Scalable thanks to the aforementioned time complexity
+    + Space efficient: constructs the K-NNG only once and improves it in-place, aside from that the algorithm doesnt store any extra data
+    + Accurate: High accuracy (compared to brute-force) for real dataset, according to authors, the accuracy is `>90%` and out-perform *Recursive Lanczos Partitioning* and *LSH*
+    + Easy to implement
+
+---
+
 ![1](assets/nndescent1.png)
 ![2](assets/nndescent2.png)
 ![3](assets/nndescent3.png)
@@ -442,33 +458,17 @@ loop
 ![6](assets/nndescent6.png)
 ![7](assets/nndescent7.png)
 ![8](assets/nndescent8.png)
-+ Advantages:
-    + General: works with any arbitary distance function `d(u, v)`
-    + Scalable: typically has acceptable time complexity
-    + Space efficient: constructs the K-NNG once and improves it in-place, minimal extra data are maintained
-    + Accurate: High accuracy (compared to brute-force) for real dataset, authors claim `>90%` and out-perform *Recursive Lanczos Partitioning* and *LSH*
-    + Easy to implement
+
+---
+
 ### K-NN search on a K-NNG
-+ Input: 
-    + `q`: the query node, the distance function `d()` should be able to be used on `q`
-    + `k`: the number of nodes to search for (***NOTE:*** this `k` is different from the parameter `k_graph` used to construct the K-NNG)
-+ Core idea: approximately search for the result by searching for node(s) closest to `q` and picking their neighbors
-    + Search for `U`: the list of nodes closest to `q` (`|U|` may be tweaked to favor either accuracy or speed)
-    + For each node `u` in `U`, consider `u` and its neighbors as result candidates
-    + Select `k` best candidates previously picked
-    + Time complexity: `O(k + |U| * k_graph)`
-+ Brute-force: `O(n * d)` where `n` is the number of nodes in the K-NNG
-+ Heuristic/meta-heuristic algorithms can be applied, example:
-    + Randomly picks a number of starting nodes, mark them as *discovered*
-    + Pick a discovered unvisited node `u` and visit it
-    + For every `v` neighboring `u`, compute `d(q, v)` and mark it as discovered
-    + Repeat until maximum number of iterations has been reached, or the best discovered node hasn't been updated recently, or other conditions
-    + Pick `k` best discovered nodes as result
-    + Time complexity: `O(m * (log(m) + k_graph * (d + log(m))))` where
-        + `m`: the number of iteration
-        + `log(m)`: cost of inserting an item to a heap
-        + `k_graph`: the number of neighbor each node has
-        + In practice: much more time efficient than brute-force
++ Essentially, searching algorithms on KNNG are heuristic/meta-heuristic algorithms
++ Specifically, can imagine the graph as the solution space, a node is a specific solution, and the heuristic algorithm moves in the direction of the nodes closest to query nodes to find global optima
+
+---
+
++ If youve understood the idea, we will skip the algorithm details, you can check out the *Optimization* course to understand heuristic better
++ The important thing is that most algorithms are pretty accurate and have far better time complexity than brute-force
 ```
 randomly pick starting_nodes
 
@@ -490,13 +490,18 @@ loop
 
 pick k best nodes from explored_nodes
 ```
+
+---
+
 ![1](assets/knns1.png)
 ![2](assets/knns2.png)
 ![3](assets/knns3.png)
 ![4](assets/knns4.png)
 
+---
+
 ### Insertion & Deletion
-+ K-NNG doesn't naturally support efficient incremental updates and is instead better fitted for processing batch query
++ K-NNG doesn't naturally support updates so we have choose a workaround
 #### Local update
 + Suppose a new node `u` needs to be inserted into (or deleted from) an existing K-NNG
 + For insertion: `u`'s neighbor list can be obtained by performing a KNN search for `u`, on the graph
@@ -512,31 +517,50 @@ pick k best nodes from explored_nodes
 + After a number of insertions, perform a full rebuild of the entire graph to reduce inaccuracy
 + Pros: Ensure temporary inaccuracy is capped to a limit, and immediately after being rebuilt, the graph is as accurate as the construction algorithm allows it to be
 + Cons: Rebuilding is computationally intensive
+
+---
+
 ### Summary
 + Pros:
-    + Simple and intuitive
-    + (Technically) Applicable for any distance function
-    + Captures the local similarity structure of data
-    + Fast and fairly accurate query
+    + Biggest pro of KNNG is that it represents the local structure of the dataset
 + Cons:
-    + Expensive to build -> poor scalability
-    + Not as effective when having to deal with dynamic updates
-    + Construction algorithm and parameter `k` affects the quality of the graph and the balance between accuracy vs speed
-    + Depending on the dataset, the result graph can get disjointed
-    + Because of the reason above, query may not be super optimal
-+ Best fit for:
+    + But that is also its biggest con, because it only represents the local structure and doesnt guarantee any global characteristic
+    + Because of that, the quality of the graph heavily depends on the quality of the dataset
+
+---
+
++ As you can see from the example, if the dataset is fragmented, then the graph is also fragmented
++ Because the nodes are not connected, it is hard to design an algorithm to perform similarity search
+
+---
+
++ Because of the aforementioned pros and cons, KNNG graph is best fit for:
     + Static dataset: No updates, graph doesn't degrade, no need to rebuild
-    + Moderately-sized dataset: Suboptomal performance is acceptable -> exchange it for simplicity
-    + Dense dataset: The graph is less disjointed and more connected, construction and query is faster and more accurate
+    + Moderately-sized dataset: so that performance is acceptable
+    + Dense dataset: The graph is more connected, algorithms have better accuracy
+
+---
 
 ## Navigable Small-World Graph
-+ [guide](https://www.pinecone.io/learn/series/faiss/hnsw/)
-+ Small world phenomenon: individuals in large social networks are connected through short chains of acquaintances, eg. "six degrees of separation"
-+ Small world graph: A K-NNG that gains **small world** characteristic thanks to the addition of a number of random long-range edges
-+ The result: Distant clusters get connected, (on average) short paths between 2 nodes get drastically reduced, or become possible, hence *navigable*
++ Small world phenomenon: appear when individuals in a very large social networks are connected through very short chains of acquaintances
++ More familiar is the *6 degrees of separation* rule, stating that everyone in the world are connected to eachother through at most 6 people in between, this is the inspiration for Mark Zucc's Facebook
+
+---
+
++ People found out that a K-NNG can gain **small world** when it gains a number of long-ranged edges
++ When that happen, the KNNG is called a small world graph
+
+---
+
++ The result:
+    + Clusters in the graph are connected
+    + Node pairs that are previously not connected, are now connected
+    + Node pairs that are previously connected, now have shorter path
+    + If the small world characteristic is replicated well, the shortest path between nodes are very short, so this improves performance and accuracy of algorithms tremendously
++ Historically, SWG was mentioned around 2012-2014, and was quickly developed into HNSWG, introduced in 2018, so we'll jump to the that section immediately
+
 ![NSWG example](./assets/nswg.png)
 ![](./assets/nswg1.png)
-+ Historically, NSWG (2012-2014) was quickly succeeded by HNSWG (2018)
 
 ## Hierarchical Navigable Small World Graph
 [riu paper](https://arxiv.org/pdf/1603.09320)
