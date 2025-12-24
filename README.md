@@ -387,11 +387,13 @@ Function FILTER_SIMILAR_PAIRS(candidate_pairs, shingles_map, threshold):
     + [Relative neighborhood graphs and their relatives](Relative_neighborhood_graphs_and_their_relatives.pdf)
     + [The relative neighborhood graph of a finite planar set](RNG.pdf)
     + [Fast Approximate Nearest-Neighbor Search with k-Nearest Neighbor Graph](Fast_Approximate_Nearest-Neighbor_Search_with_k-Ne.pdf)
-+ A graph where every node `u` has edges to `k` other nodes that is closest to it
++ As its name suggest, a KNNG is a data structure that represents the dataset as a graph, with each data entry as a node, and each node has edges connecting it with a number of nodes closest to it, for simplicity, this number is represented by a fixed parameter `k` for every nodes
 + Example K-NNG with `10` nodes and Euclidian distance:
 ![](assets/knng.png)
-+ Many (approximate) similarity search algos can be performed on an already constructed K-NNG with better time complexity than brute-force
-+ The problem then becomes an efficient construction algorithm
++ Once we know that a KNNG has that characteristic, we have the ability to design many algorithms to perform similarity search
++ The problem then becomes *"How can we construct a KNNG"*
+
+
 + Brute force: `O(n^2 * d)` where
     + `n` is the number of nodes
     + The function to measure distance between 2 nodes `d(u, v)` has time complexity of `O(d)`
