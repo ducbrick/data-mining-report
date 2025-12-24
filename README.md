@@ -562,26 +562,76 @@ pick k best nodes from explored_nodes
 ![NSWG example](./assets/nswg.png)
 ![](./assets/nswg1.png)
 
+---
+
 ## Hierarchical Navigable Small World Graph
-[riu paper](https://arxiv.org/pdf/1603.09320)
 + Evolution from NSWG
-+ Like NSWG, it adds random long-range edges to improve performance
-+ Unlike NSWG, where these new edges are shoved into the graph as-is and in-place, HNSWG separates its edges into multiple layers, forming a *hierarchy*
-+ Specifically, the many layers have varying level of density, with the top-most layer being the sparsest (thus having the most long-range edges) and the lowest layer being the densest (thus closer to a KNNG)
++ When talking about the jump from KNNG to SWG, people consider it revolutionary
++ The jump from SWG to HNSWG isnt as significant, but is still significant in aspects like scalability
++ This data structure, in reality, is the foundation for the most modern algorithms (state of the art) like *FAISS* and modern vector databases
++ As mentioned, HNSWG evolved from SWG, so it also has small world characteristic thanks to long ranged edges
++ The difference is that SWG jams both normal edges and long-ranged edges into the same data structure, HNSWG separates edges into layers depending on its length
++ See following example
+
+---
+
 ![](./assets/hnswg.png)
+
++ When examined separately, each layer by itself is a KNNG
++ But their density is different:
+    + The 0th layer has every node from the entire dataset, 
+    + The 1th layer only has a subset of the dataset
+    + Upper layers have even less nodes
++ So in the context of the entire dataset, only the 0th layer is a KNNG, the further up we go, the longer the edges become
+
+---
+
 ### Search
-+ Start on the top-most layer
-+ Perform search for node(s) closest to query
-+ Descent onto the next layer, from the obtained nodes, start searching again
-+ Repeat until the lowest layer
++ Basically the same as KNNG
++ The main idea is that we use search results of upper layers as entry points of lower layers
++ Specifically:
+    + Start on the top-most layer
+    + Perform search on that layer
+    + Descent onto the next layer, use the obtain nodes to start searching again
+    + Repeat until the lowest layer
+
+---
+
 ![](./assets/hnsw_search.png)
+
++ Elaborate on search process
+
+---
+
 ![](./assets/hnsw_search2.png)
+
++ From the heuristic standpoint, algorith has 2 phases:
+    + Searching on upper layers: exploration: traverse solution space for a *region* that looks good
+    + Descending down to lower layers: switching from exploration to exploitation: exploiting said region for specific global optimal solutions
+
+---
+
 ### Insertion
-+ Unlike KNNG, HNSWG can be constructed incrementally, so we'll cover insertion right away
-+ Node distribution: probability of a node existing on the next layer is `p`, which means the number of nodes on each layer decrease exponentially
-+ Suppose node `u` needs to be inserted into layers 0 to L: on each layer, connect `u` to the nodes closest to it
-+ This process is similar to querying: traverse the structure top-down, utilise the top layers to quickly approach optima and gradually refine search results as the algorithm travel deeper
++ Unlike KNNG, HNSWG can be constructed incrementally by sequentially inserting nodes
++ When inserting a node, we need to decide which layers to insert it into
++ This process is usually decided by probability
++ Specifically:
+    + A node has 100% chance of being inserted into layer 0
+    + Going up to layer 1, it has probability of being inserted `p < 1`
+    + If it is inserted into layer 1, it has probability of being inserted into layer 2 `p ^ 2`
+    + Continue until one layer where the probability fail
+
+---
+
++ After that process, the distribution of nodes across layers is similar to an exponentially decreasing function
+
+---
+
++ Suppose node `u` is decided to be inserted into layers 0 to L, on each layer, we find its neighbor using aforementioned search algorithm
   ![](assets/hsnw_insert.png)
+
+---
+
 ### Deletion
 + HNSWG as proposed in the original paper does not natively support true deletion
 #### Deletion flag
