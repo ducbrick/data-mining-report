@@ -527,7 +527,7 @@ pick k best nodes from explored_nodes
     + Node pairs that are previously not connected, are now connected
     + Node pairs that are previously connected, now have shorter path
     + If the small world characteristic is replicated well, the shortest path between nodes are very short, so this improves performance and accuracy of algorithms tremendously
-+ Historically, SWG was mentioned around 2012-2014, and was quickly developed into HNSWG, introduced in 2018, so we'll jump to the that section immediately
++ Historically, SWG was mentioned around 2012-2014, and was quickly developed into HNSWG, introduced in 2016, so we'll jump to the that section immediately
 
 ![NSWG example](./assets/nswg.png)
 ![](./assets/nswg1.png)
